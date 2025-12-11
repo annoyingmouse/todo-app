@@ -13,7 +13,7 @@ const AddTaskForm = () => {
   return (
     <form onSubmit={handleSubmit} className="flex space-x-2 mb-4">
       <label htmlFor="task-title" className="sr-only">
-        Task Title
+        New Task
       </label>
       <input
         id="task-title"
@@ -21,7 +21,7 @@ const AddTaskForm = () => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         className="flex-1 p-2 border border-gray-300 rounded"
-        placeholder="Enter a new task"
+        placeholder="enter new task"
       />
       <button
         type="submit"

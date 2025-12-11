@@ -1,20 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import AddTaskForm from '../AddTaskForm'
-import { vi } from 'vitest'
-describe('AddTaskForm', () => {
-  it('renders input and button', () => {
-    const onAddMock = vi.fn()
-    render(<AddTaskForm onAdd={onAddMock} />)
-    expect(screen.getByPlaceholderText(/enter new task/i)).toBeInTheDocument()
-    expect(screen.getByRole('button')).toBeInTheDocument()
-  })
-  it('calls onAdd when form is submitted', () => {
-    const onAddMock = vi.fn()
-    render(<AddTaskForm onAdd={onAddMock} />)
-    const input = screen.getByPlaceholderText(/enter new task/i)
-    fireEvent.change(input, { target: { value: 'Test Task' } })
-    const button = screen.getByRole('button')
-    fireEvent.click(button)
-    expect(onAddMock).toHaveBeenCalledWith('Test Task')
-  })
-})
+import { screen, fireEvent } from "@testing-library/react";
+import { renderWithQuery } from "./testUtils.tsx";
+import App from "../../App";
+
+it("adds a new task to the list when submitted", async () => {
+  renderWithQuery(<App />);
+
+  const input = screen.getByPlaceholderText(/enter new task/i);
+  fireEvent.change(input, { target: { value: "Test Task" } });
+
+  fireEvent.click(screen.getByRole("button"));
+
+  expect(await screen.findByText("Test Task")).toBeInTheDocument();
+});
