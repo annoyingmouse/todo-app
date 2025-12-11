@@ -1,13 +1,8 @@
 {
   "tasks": [
     {
-      "id": "1",
-      "title": "Learn React",
-      "completed": true
-    },
-    {
-      "id": "2",
-      "title": "Set up JSON Server",
+      "id": "3e9c",
+      "title": "hello",
       "completed": false
     }
   ]

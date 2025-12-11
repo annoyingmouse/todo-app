@@ -1,16 +1,15 @@
 import { useTasks } from "../hooks/useTasks.ts";
-import { useDeleteTask } from "../hooks/useDeleteTask.ts";
-import { useUpdateTask } from "../hooks/useUpdateTask.ts";
 import { useFilterStore } from "../store/FilterStore";
 import SearchBox from "./SearchBox";
 import FilterBar from "./FilterBar";
 import SortDropdown from "./SortDropdown";
 import type { Task } from "../types/Task.ts";
+import EmptyState from "./EmptyState.tsx";
+import ErrorBanner from "./ErrorBanner.tsx";
+import TaskItem from "./TaskItem.tsx";
 
 export default function TaskList() {
   const { data: tasks, isLoading, isError } = useTasks();
-  const deleteTask = useDeleteTask();
-  const updateTask = useUpdateTask();
   const searchQuery = useFilterStore((state) => state.searchQuery);
   const filter = useFilterStore((state) => state.filter);
   const sortOrder = useFilterStore((state) => state.sortOrder);
@@ -28,44 +27,27 @@ export default function TaskList() {
         ? a.title.localeCompare(b.title)
         : b.title.localeCompare(a.title);
     });
-  const handleToggle = (task: Task) => {
-    updateTask.mutate({ ...task, completed: !task.completed });
-  };
-  const handleDelete = (id: number) => {
-    deleteTask.mutate(id);
-  };
   if (isLoading) return <p>Loading tasks...</p>;
-  if (isError) return <p>Failed to load tasks.</p>;
+  if (isError) return <ErrorBanner errorMessage="Failed to fetch tasks." />;
+  if (!tasks || tasks.length === 0)
+    return (
+      <EmptyState message="No tasks available. Add a task to get started." />
+    );
+
   return (
     <div className="space-y-4">
       <SearchBox />
       <FilterBar />
       <SortDropdown />
-      <ul className="space-y-2">
-        {filteredTasks?.map((task: Task) => (
-          <li
-            key={task.id}
-            className="flex justify-between items-center p-3 border rounded"
-          >
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => handleToggle(task)}
-              />
-              <span className={task.completed ? "line-through" : ""}>
-                {task.title}
-              </span>
-            </label>
-            <button
-              onClick={() => handleDelete(task.id)}
-              className="text-red-500 hover:underline"
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+      {!filteredTasks || filteredTasks.length === 0 ? (
+        <EmptyState message="No tasks found matching that search term or filter." />
+      ) : (
+        <ul className="space-y-2">
+          {filteredTasks?.map((task: Task) => (
+            <TaskItem task={task} key={task.id} />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

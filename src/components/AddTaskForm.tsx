@@ -12,7 +12,11 @@ const AddTaskForm = () => {
   };
   return (
     <form onSubmit={handleSubmit} className="flex space-x-2 mb-4">
+      <label htmlFor="task-title" className="sr-only">
+        Task Title
+      </label>
       <input
+        id="task-title"
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}

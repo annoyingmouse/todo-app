@@ -7,12 +7,37 @@ export default function SearchBox() {
     setSearchQuery(e.target.value);
   };
   return (
-    <input
-      type="text"
-      placeholder="Search tasks..."
-      className="border p-2 rounded w-full"
-      value={searchQuery}
-      onChange={handleChange}
-    />
+    <div className="relative">
+      <label htmlFor="searchQuery" className="sr-only">
+        Search
+      </label>
+      <input
+        id="searchQuery"
+        type="text"
+        placeholder="Search tasks..."
+        className="border p-2 rounded w-full"
+        value={searchQuery}
+        onChange={handleChange}
+      />
+      <div
+        className="absolute right-0 inset-y-0 flex items-center"
+        onClick={() => setSearchQuery("")}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="-ml-1 mr-3 h-5 w-5 text-gray-400 hover:text-gray-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </div>
+    </div>
   );
 }
