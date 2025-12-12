@@ -1,17 +1,23 @@
-FROM node:20
+FROM node:22-alpine
 
 WORKDIR /app
 
+# Install netcat for readiness check
+RUN apk add --no-cache netcat-openbsd
+
+# Install global build tools
+RUN npm install -g typescript vite
+
+# Install project dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy project source
 COPY . .
 
-# Install netcat for readiness checks
-RUN apt-get update && apt-get install -y netcat-openbsd
-
-# Add entrypoint
+# Add entrypoint script
 COPY entrypoint.sh .
+RUN sed -i 's/\r$//' entrypoint.sh
 RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
