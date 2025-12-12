@@ -6,7 +6,10 @@ export const useUpdateTask = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (updatedTask: Task) =>
-      axios.patch(`http://localhost:3001/tasks/${updatedTask.id}`, updatedTask),
+      axios.patch(
+        `${import.meta.env.VITE_API_URL}/tasks/${updatedTask.id}`,
+        updatedTask,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },

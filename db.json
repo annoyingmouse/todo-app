@@ -1,19 +1,3 @@
 {
-  "tasks": [
-    {
-      "id": "3e9c",
-      "title": "hello",
-      "completed": false
-    },
-    {
-      "id": "4dfc",
-      "title": "fred",
-      "completed": false
-    },
-    {
-      "id": "1a3a",
-      "title": "Another Fred",
-      "completed": false
-    }
-  ]
+  "tasks": []
 }

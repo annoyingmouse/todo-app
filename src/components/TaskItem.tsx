@@ -12,11 +12,7 @@ const TaskItem: React.FC<TaskProps> = ({ task }) => {
       key={task.id}
       className="flex justify-between items-center border p-2 rounded"
     >
-      <span
-        className={`flex-1 ${
-          task.completed ? "line-through text-gray-400" : ""
-        }`}
-      >
+      <span className={`flex-1 ${task.completed ? "line-through" : ""}`}>
         {parse(task.title)}
       </span>
       <button
