@@ -82,7 +82,7 @@ self.addEventListener("message", async (e) => {
   const { type, payload, msgId } = e.data;
 
   try {
-    const handler = handlers[type<T];
+    const handler = handlers[type];
     if (!handler) {
       throw new Error(`Unknown action type: ${type}`);
     }
