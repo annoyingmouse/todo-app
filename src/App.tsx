@@ -1,9 +1,9 @@
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
-const HomePage = lazy(() => import("./pages/HomePage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (

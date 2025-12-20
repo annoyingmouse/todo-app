@@ -1,15 +1,15 @@
-import { useTasks } from "../hooks/useTasks.ts";
+import { useTasks } from "../hooks/useTasks";
 import { useFilterStore } from "../store/FilterStore";
 import SearchBox from "./SearchBox";
 import FilterBar from "./FilterBar";
 import SortDropdown from "./SortDropdown";
-import type { Task } from "../types/Task.ts";
-import EmptyState from "./EmptyState.tsx";
-import ErrorBanner from "./ErrorBanner.tsx";
-import TaskItem from "./TaskItem.tsx";
+import type { Task } from "../types/Task";
+import EmptyState from "./EmptyState";
+import ErrorBanner from "./ErrorBanner";
+import TaskItem from "./TaskItem";
 
 export default function TaskList() {
-  const { data: tasks, isLoading, isError } = useTasks();
+  const { tasks, isLoading, isError } = useTasks();
   const searchQuery = useFilterStore((state) => state.searchQuery);
   const filter = useFilterStore((state) => state.filter);
   const sortOrder = useFilterStore((state) => state.sortOrder);
@@ -22,7 +22,7 @@ export default function TaskList() {
     .filter((task: Task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()),
     )
-    .sort((a, b) => {
+    .sort((a: Task, b: Task) => {
       return sortOrder === "asc"
         ? a.title.localeCompare(b.title)
         : b.title.localeCompare(a.title);
