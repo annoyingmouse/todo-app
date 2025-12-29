@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { useTasks } from "../hooks/useTasks";
+import {addTodo} from "../db/todos.repo";
 
 const AddTaskForm = () => {
   const [title, setTitle] = useState("");
-  const { addTask } = useTasks();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    addTask({ title, completed: false });
+    addTodo(title);
     setTitle("");
   };
   return (

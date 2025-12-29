@@ -1,9 +1,9 @@
 import parse from "html-react-parser";
 import type { TaskProps } from "../types/TaskProps";
-import { useTasks } from "../hooks/useTasks";
+import {deleteTodo, toggleTodo} from "../db/todos.repo";
+
 
 const TaskItem: React.FC<TaskProps> = ({ task }) => {
-  const { updateTask, deleteTask } = useTasks();
 
   return (
     <li
@@ -14,13 +14,13 @@ const TaskItem: React.FC<TaskProps> = ({ task }) => {
         {parse(task.title)}
       </span>
       <button
-        onClick={() => updateTask({ ...task, completed: !task.completed })}
+        onClick={() => toggleTodo(task.id, task.completed)}
         className="text-sm px-2 py-1 bg-yellow-200 rounded"
       >
         Toggle
       </button>
       <button
-        onClick={() => deleteTask(task.id)}
+        onClick={() => deleteTodo(task.id)}
         className="ml-2 text-sm px-2 py-1 bg-red-300 rounded"
       >
         Delete

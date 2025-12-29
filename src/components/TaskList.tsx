@@ -1,19 +1,18 @@
-import { useTasks } from "../hooks/useTasks";
 import { useFilterStore } from "../store/FilterStore";
 import SearchBox from "./SearchBox";
 import FilterBar from "./FilterBar";
 import SortDropdown from "./SortDropdown";
 import type { Task } from "../types/Task";
 import EmptyState from "./EmptyState";
-import ErrorBanner from "./ErrorBanner";
 import TaskItem from "./TaskItem";
+import { listTodos } from "../db/todos.repo";
 
 export default function TaskList() {
-  const { tasks, isLoading, isError } = useTasks();
+  const { data: todos = [] } = listTodos();
   const searchQuery = useFilterStore((state) => state.searchQuery);
   const filter = useFilterStore((state) => state.filter);
   const sortOrder = useFilterStore((state) => state.sortOrder);
-  const filteredTasks = tasks
+  const filteredTasks = todos
     ?.filter((task: Task) => {
       if (filter === "active") return !task.completed;
       if (filter === "completed") return task.completed;
@@ -27,9 +26,7 @@ export default function TaskList() {
         ? a.title.localeCompare(b.title)
         : b.title.localeCompare(a.title);
     });
-  if (isLoading) return <p>Loading tasks...</p>;
-  if (isError) return <ErrorBanner errorMessage="Failed to fetch tasks." />;
-  if (!tasks || tasks.length === 0)
+  if (!todos || todos.length === 0)
     return (
       <EmptyState message="No tasks available. Add a task to get started." />
     );
