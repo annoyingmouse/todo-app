@@ -1,8 +1,13 @@
-import "@testing-library/jest-dom";
-import { setupServer } from "msw/node";
-import { handlers } from "./components/__tests__/handlers.ts";
+import { vi } from "vitest";
+import { server } from "./__tests__/mocks/server";
 
-const server = setupServer(...handlers);
+class MockWorker {
+  postMessage = vi.fn();
+  terminate = vi.fn();
+  onmessage = null;
+}
+
+vi.stubGlobal("Worker", MockWorker as unknown as typeof Worker);
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
