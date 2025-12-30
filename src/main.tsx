@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initBackend } from "absurd-sql/dist/indexeddb-main-thread";
 import { dbWorker } from "./sql/worker-instance";
 
-initBackend(dbWorker); // Use the shared instance
+initBackend(dbWorker);
 
 const queryClient = new QueryClient();
 

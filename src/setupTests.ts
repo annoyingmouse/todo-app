@@ -1,5 +1,5 @@
+import "@testing-library/jest-dom";
 import { vi } from "vitest";
-import { server } from "./__tests__/mocks/server";
 
 class MockWorker {
   postMessage = vi.fn();
@@ -8,7 +8,3 @@ class MockWorker {
 }
 
 vi.stubGlobal("Worker", MockWorker as unknown as typeof Worker);
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
