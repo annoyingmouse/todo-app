@@ -1,7 +1,7 @@
 import initSqlJs from "@jlongster/sql.js";
 import { SQLiteFS } from "absurd-sql";
 import IndexedDBBackend from "absurd-sql/dist/indexeddb-backend";
-import {Task} from "../types/Task";
+import { Task } from "../types/Task";
 
 type SqlStatement = {
   step(): boolean;
@@ -14,18 +14,26 @@ type SqlDatabase = {
 };
 type HandlerMap = {
   GET_TASKS: () => Task[];
-  ADD_TASK: (payload: { title: string; completed: number }) => { success: true };
-  UPDATE_TASK: (payload: {
-    id: number;
-    title: string;
-    completed: number;
-  }) => { success: true };
+  ADD_TASK: (payload: { title: string; completed: number }) => {
+    success: true;
+  };
+  UPDATE_TASK: (payload: { id: number; title: string; completed: number }) => {
+    success: true;
+  };
   DELETE_TASK: (payload: { id: number }) => { success: true };
 };
 type WorkerRequest =
   | { msgId: number; type: "GET_TASKS"; payload: undefined }
-  | { msgId: number; type: "ADD_TASK"; payload: { title: string; completed: number } }
-  | { msgId: number; type: "UPDATE_TASK"; payload: { id: number; title: string; completed: number } }
+  | {
+      msgId: number;
+      type: "ADD_TASK";
+      payload: { title: string; completed: number };
+    }
+  | {
+      msgId: number;
+      type: "UPDATE_TASK";
+      payload: { id: number; title: string; completed: number };
+    }
   | { msgId: number; type: "DELETE_TASK"; payload: { id: number } };
 
 let db: SqlDatabase | null = null;
