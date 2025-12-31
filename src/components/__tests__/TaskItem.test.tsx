@@ -40,8 +40,6 @@ it("removes a task when delete is clicked", async () => {
   fireEvent.click(deleteButton);
 
   await waitFor(() => {
-    expect(
-      screen.queryByText(/learn testing/i)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/learn testing/i)).not.toBeInTheDocument();
   });
 });

@@ -16,7 +16,6 @@ export default defineConfig({
     }),
   ],
   server: {
-    https: true,
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",
