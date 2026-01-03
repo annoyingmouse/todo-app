@@ -1,5 +1,5 @@
-import AddTaskForm from "../components/AddTaskForm.tsx";
-import TaskList from "../components/TaskList.tsx";
+import AddTaskForm from "../components/AddTaskForm";
+import TaskList from "../components/TaskList";
 
 const HomePage = () => {
   return (

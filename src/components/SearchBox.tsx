@@ -19,7 +19,7 @@ export default function SearchBox() {
         value={searchQuery}
         onChange={handleChange}
       />
-      <div
+      <button
         className="absolute right-0 inset-y-0 flex items-center"
         onClick={() => setSearchQuery("")}
       >
@@ -37,7 +37,7 @@ export default function SearchBox() {
             d="M6 18L18 6M6 6l12 12"
           />
         </svg>
-      </div>
+      </button>
     </div>
   );
 }

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useAddTask } from "../hooks/useAddTask";
+import { useTasks } from "../hooks/useTasks";
 
 const AddTaskForm = () => {
   const [title, setTitle] = useState("");
-  const addTask = useAddTask();
+  const { addTask } = useTasks();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    addTask.mutate({ title, completed: false });
+    addTask({ title, completed: false });
     setTitle("");
   };
   return (
