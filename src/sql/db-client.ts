@@ -1,30 +1,44 @@
 import { dbWorker } from "./worker-instance";
-const pending = new Map();
+import { Task } from "../types/Task";
 
-dbWorker.onmessage = (e) => {
-  // Use dbWorker instead of local worker
+type Deferred<T> = {
+  resolve: (value: T | PromiseLike<T>) => void;
+  reject: (reason?: unknown) => void;
+};
+
+// We use 'any' here because the Map holds mixed response types.
+// This is one of the few places where 'any' is architecturally necessary
+// unless using a complex discriminated union.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const pending = new Map<string, Deferred<any>>();
+
+dbWorker.onmessage = (e: MessageEvent) => {
   if (!e.data?.msgId) return;
   const { msgId, result, error } = e.data;
   const request = pending.get(msgId);
+
   if (request) {
-    if (error) request.reject(error);
-    else request.resolve(result);
+    if (error) {
+      request.reject(error);
+    } else {
+      request.resolve(result);
+    }
     pending.delete(msgId);
   }
 };
 
-function send(type: string, payload?: any) {
+function send<T>(type: string, payload?: unknown): Promise<T> {
   const msgId = Math.random().toString(36).slice(2);
-  return new Promise((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
+    // TypeScript allows this because T satisfies the 'any' in the Map
     pending.set(msgId, { resolve, reject });
     dbWorker.postMessage({ type, payload, msgId });
   });
 }
 
 export const taskApi = {
-  getAll: () => send("GET_TASKS"),
-  add: (task: { title: string; completed: boolean }) => send("ADD_TASK", task),
-  update: (task: { id: number; title: string; completed: boolean }) =>
-    send("UPDATE_TASK", task),
-  delete: (id: number) => send("DELETE_TASK", { id }),
+  getAll: () => send<Task[]>("GET_TASKS"),
+  add: (task: Omit<Task, 'id'>) => send<{ id: number }>("ADD_TASK", task),
+  update: (task: Task) => send<void>("UPDATE_TASK", task),
+  delete: (id: number) => send<void>("DELETE_TASK", { id }),
 };
