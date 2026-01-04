@@ -38,7 +38,7 @@ function send<T>(type: string, payload?: unknown): Promise<T> {
 
 export const taskApi = {
   getAll: () => send<Task[]>("GET_TASKS"),
-  add: (task: Omit<Task, 'id'>) => send<{ id: number }>("ADD_TASK", task),
+  add: (task: Omit<Task, "id">) => send<{ id: number }>("ADD_TASK", task),
   update: (task: Task) => send<void>("UPDATE_TASK", task),
   delete: (id: number) => send<void>("DELETE_TASK", { id }),
 };

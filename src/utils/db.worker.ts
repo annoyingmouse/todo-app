@@ -9,7 +9,11 @@ import { Task } from "../types/Task";
 interface SqlJsStatic {
   FS: {
     mkdir: (path: string) => void;
-    mount: (fs: unknown, options: Record<string, unknown>, path: string) => void;
+    mount: (
+      fs: unknown,
+      options: Record<string, unknown>,
+      path: string,
+    ) => void;
     mounts: Array<{ mountpoint: string }>;
   };
   register_for_idb: (sqlFS: unknown) => void;

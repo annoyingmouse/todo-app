@@ -1,7 +1,9 @@
 declare module "@jlongster/sql.js" {
   export interface SqlJsStatic {
     // Add minimal properties you use, or keep as unknown record
-    Database: new (data?: Uint8Array) => unknown;
+    Database: new (
+      data?: Uint8Array,
+    ) => unknown;
     FS: unknown;
     register_for_idb: (sqlFS: unknown) => void;
   }
