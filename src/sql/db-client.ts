@@ -41,6 +41,7 @@ function rowsToTasks(result: QueryResult): Task[] {
     return {
       ...obj,
       completed: (obj.completed as number) ?? 0,
+      dateCompleted: (obj.date_completed as string | null) ?? null,
     } as unknown as Task;
   });
 }
@@ -65,6 +66,13 @@ async function initDb(): Promise<Database> {
   try {
     await database.execute(
       "ALTER TABLE tasks ADD COLUMN description TEXT NOT NULL DEFAULT ''",
+    );
+  } catch {
+    // column already exists — safe to ignore
+  }
+  try {
+    await database.execute(
+      "ALTER TABLE tasks ADD COLUMN date_completed TEXT",
     );
   } catch {
     // column already exists — safe to ignore
@@ -95,9 +103,16 @@ export const taskApi = {
 
   async add(task: Omit<Task, "id">): Promise<{ id: number }> {
     const database = await getDb();
+    const dateCompleted =
+      task.completed === 100 ? new Date().toISOString() : null;
     const result = (await database.executeWithParams(
-      "INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)",
-      [toParam(task.title), toParam(task.description), toParam(task.completed)],
+      "INSERT INTO tasks (title, description, completed, date_completed) VALUES (?, ?, ?, ?)",
+      [
+        toParam(task.title),
+        toParam(task.description),
+        toParam(task.completed),
+        toParam(dateCompleted),
+      ],
     )) as QueryResult;
     await closeDb();
     return { id: result.lastInsertId ?? 0 };
@@ -105,12 +120,17 @@ export const taskApi = {
 
   async update(task: Task): Promise<void> {
     const database = await getDb();
+    const dateCompleted =
+      task.completed === 100
+        ? (task.dateCompleted ?? new Date().toISOString())
+        : null;
     await database.executeWithParams(
-      "UPDATE tasks SET title=?, description=?, completed=? WHERE id=?",
+      "UPDATE tasks SET title=?, description=?, completed=?, date_completed=? WHERE id=?",
       [
         toParam(task.title),
         toParam(task.description),
         toParam(task.completed),
+        toParam(dateCompleted),
         toParam(task.id),
       ],
     );

@@ -23,9 +23,16 @@ export default function TaskList() {
       task.title.toLowerCase().includes(searchQuery.toLowerCase()),
     )
     .sort((a: Task, b: Task) => {
-      return sortOrder === "asc"
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title);
+      if (sortOrder === "asc") return a.title.localeCompare(b.title);
+      if (sortOrder === "desc") return b.title.localeCompare(a.title);
+      const aDate = a.dateCompleted ?? "";
+      const bDate = b.dateCompleted ?? "";
+      if (!aDate && !bDate) return 0;
+      if (!aDate) return 1;
+      if (!bDate) return -1;
+      return sortOrder === "dateAsc"
+        ? aDate.localeCompare(bDate)
+        : bDate.localeCompare(aDate);
     });
   if (isLoading) return <p>Loading tasks...</p>;
   if (isError) return <ErrorBanner errorMessage="Failed to fetch tasks." />;

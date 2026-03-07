@@ -15,8 +15,8 @@ import App from "../../App";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 
 const initialTasks = [
-  { id: 1, title: "Learn Testing", description: "A test task", completed: 0 },
-  { id: 2, title: "hello", description: "", completed: 100 },
+  { id: 1, title: "Learn Testing", description: "A test task", completed: 0, dateCompleted: null },
+  { id: 2, title: "hello", description: "", completed: 100, dateCompleted: "2025-01-15T12:00:00.000Z" },
 ];
 
 beforeEach(() => {
@@ -30,12 +30,17 @@ beforeEach(() => {
   });
   vi.mocked(taskApi.update).mockImplementation(async (task) => {
     tasks = tasks.map((t) => (t.id === task.id ? task : t));
-    return task;
   });
   vi.mocked(taskApi.delete).mockImplementation(async (id) => {
     tasks = tasks.filter((t) => t.id !== id);
   });
 });
+
+async function openEditModalForLearnTesting() {
+  const taskItem = await screen.findByText(/learn testing/i);
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+}
 
 it("removes a task when delete is clicked", async () => {
   renderWithQuery(<App />);
@@ -61,10 +66,7 @@ it("shows description below task title", async () => {
 
 it("opens edit modal when edit is clicked", async () => {
   renderWithQuery(<App />);
-
-  const taskItem = await screen.findByText(/learn testing/i);
-  const listItem = taskItem.closest("li")!;
-  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+  await openEditModalForLearnTesting();
 
   expect(await screen.findByRole("dialog")).toBeInTheDocument();
   expect(screen.getByDisplayValue("Learn Testing")).toBeInTheDocument();
@@ -72,10 +74,7 @@ it("opens edit modal when edit is clicked", async () => {
 
 it("saves updated title from edit modal", async () => {
   renderWithQuery(<App />);
-
-  const taskItem = await screen.findByText(/learn testing/i);
-  const listItem = taskItem.closest("li")!;
-  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+  await openEditModalForLearnTesting();
 
   const titleInput = await screen.findByDisplayValue("Learn Testing");
   fireEvent.change(titleInput, { target: { value: "Updated Task" } });
@@ -94,10 +93,7 @@ it("applies line-through to completed tasks", async () => {
 
 it("saves updated description from edit modal", async () => {
   renderWithQuery(<App />);
-
-  const taskItem = await screen.findByText(/learn testing/i);
-  const listItem = taskItem.closest("li")!;
-  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+  await openEditModalForLearnTesting();
 
   const dialog = await screen.findByRole("dialog");
   const descriptionTextarea = within(dialog).getByLabelText(/description/i);
@@ -112,10 +108,7 @@ it("saves updated description from edit modal", async () => {
 
 it("saves updated completion percentage from edit modal", async () => {
   renderWithQuery(<App />);
-
-  const taskItem = await screen.findByText(/learn testing/i);
-  const listItem = taskItem.closest("li")!;
-  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+  await openEditModalForLearnTesting();
 
   const dialog = await screen.findByRole("dialog");
   const slider = within(dialog).getByRole("slider");
@@ -132,10 +125,7 @@ it("saves updated completion percentage from edit modal", async () => {
 
 it("cancel button closes modal without saving changes", async () => {
   renderWithQuery(<App />);
-
-  const taskItem = await screen.findByText(/learn testing/i);
-  const listItem = taskItem.closest("li")!;
-  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+  await openEditModalForLearnTesting();
 
   const titleInput = await screen.findByDisplayValue("Learn Testing");
   fireEvent.change(titleInput, { target: { value: "Changed Title" } });
@@ -146,12 +136,73 @@ it("cancel button closes modal without saving changes", async () => {
   expect(screen.queryByText("Changed Title")).not.toBeInTheDocument();
 });
 
-it("clicking the backdrop closes the modal without saving", async () => {
+it("does not show the date completed field for incomplete tasks", async () => {
+  renderWithQuery(<App />);
+  await openEditModalForLearnTesting();
+
+  expect(screen.queryByLabelText(/date completed/i)).not.toBeInTheDocument();
+});
+
+it("shows the date completed field for fully complete tasks", async () => {
   renderWithQuery(<App />);
 
-  const taskItem = await screen.findByText(/learn testing/i);
+  const taskItem = await screen.findByText("hello");
   const listItem = taskItem.closest("li")!;
   fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  expect(await screen.findByLabelText(/date completed/i)).toBeInTheDocument();
+});
+
+it("shows the date completed field when slider is moved to 100%", async () => {
+  renderWithQuery(<App />);
+  await openEditModalForLearnTesting();
+
+  const dialog = screen.getByRole("dialog");
+  const slider = within(dialog).getByRole("slider");
+  fireEvent.change(slider, { target: { value: "100" } });
+
+  expect(screen.getByLabelText(/date completed/i)).toBeInTheDocument();
+});
+
+it("hides the date completed field when slider is moved below 100%", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText("hello");
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  await screen.findByLabelText(/date completed/i);
+
+  const dialog = screen.getByRole("dialog");
+  const slider = within(dialog).getByRole("slider");
+  fireEvent.change(slider, { target: { value: "50" } });
+
+  expect(screen.queryByLabelText(/date completed/i)).not.toBeInTheDocument();
+});
+
+it("saves an edited date completed", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText("hello");
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  const dateInput = await screen.findByLabelText(/date completed/i);
+  fireEvent.change(dateInput, { target: { value: "2025-12-25" } });
+  fireEvent.click(screen.getByRole("button", { name: /save/i }));
+
+  await waitFor(() => {
+    expect(taskApi.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dateCompleted: new Date("2025-12-25").toISOString(),
+      }),
+    );
+  });
+});
+
+it("clicking the backdrop closes the modal without saving", async () => {
+  renderWithQuery(<App />);
+  await openEditModalForLearnTesting();
 
   const dialog = await screen.findByRole("dialog");
   fireEvent.click(dialog);

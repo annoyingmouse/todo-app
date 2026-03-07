@@ -15,7 +15,7 @@ vi.mock("../../sql/db-client", () => {
         tasks.push(newTask);
         return newTask;
       }),
-      update: vi.fn(async (task) => task),
+      update: vi.fn(async () => {}),
       delete: vi.fn(async (id) => {
         tasks = tasks.filter((t) => t.id !== id);
       }),

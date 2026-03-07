@@ -11,10 +11,14 @@ export default function SortDropdown() {
         id="resultSort"
         className="border rounded p-2"
         value={sortOrder}
-        onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+        onChange={(e) =>
+          setSortOrder(e.target.value as "asc" | "desc" | "dateAsc" | "dateDesc")
+        }
       >
         <option value="asc">Sort A → Z</option>
         <option value="desc">Sort Z → A</option>
+        <option value="dateAsc">Date completed ↑</option>
+        <option value="dateDesc">Date completed ↓</option>
       </select>
     </>
   );

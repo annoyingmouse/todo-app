@@ -16,9 +16,9 @@ import { screen, fireEvent, within } from "@testing-library/react";
 import { useFilterStore } from "../../store/FilterStore";
 
 const initialTasks = [
-  { id: 1, title: "Banana", description: "", completed: 0 },
-  { id: 2, title: "Apple", description: "", completed: 100 },
-  { id: 3, title: "Cherry", description: "", completed: 50 },
+  { id: 1, title: "Banana", description: "", completed: 0, dateCompleted: null },
+  { id: 2, title: "Apple", description: "", completed: 100, dateCompleted: "2025-06-01T10:00:00.000Z" },
+  { id: 3, title: "Cherry", description: "", completed: 50, dateCompleted: null },
 ];
 
 beforeEach(() => {
@@ -124,6 +124,32 @@ it("shows empty state when no tasks match search", async () => {
 it("sorts tasks A to Z by default", async () => {
   renderWithQuery(<App />);
   await screen.findByText("Banana");
+
+  const main = screen.getByRole("main");
+  const items = within(main).getAllByRole("listitem");
+  expect(items[0]).toHaveTextContent("Apple");
+  expect(items[1]).toHaveTextContent("Banana");
+  expect(items[2]).toHaveTextContent("Cherry");
+});
+
+it("sorts tasks with a dateCompleted before those without when sorting by date ascending", async () => {
+  renderWithQuery(<App />);
+  await screen.findByText("Banana");
+
+  fireEvent.change(screen.getByRole("combobox"), { target: { value: "dateAsc" } });
+
+  const main = screen.getByRole("main");
+  const items = within(main).getAllByRole("listitem");
+  expect(items[0]).toHaveTextContent("Apple");
+  expect(items[1]).toHaveTextContent("Banana");
+  expect(items[2]).toHaveTextContent("Cherry");
+});
+
+it("sorts tasks with a dateCompleted before those without when sorting by date descending", async () => {
+  renderWithQuery(<App />);
+  await screen.findByText("Banana");
+
+  fireEvent.change(screen.getByRole("combobox"), { target: { value: "dateDesc" } });
 
   const main = screen.getByRole("main");
   const items = within(main).getAllByRole("listitem");

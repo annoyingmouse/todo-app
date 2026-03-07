@@ -27,12 +27,19 @@ const TaskItem: React.FC<TaskProps> = ({ task }) => {
     <>
       <li className="flex items-center gap-2 border p-2 rounded">
         <span className="flex-1 flex flex-col">
-          <span
-            className={
-              task.completed === 100 ? "line-through text-gray-400" : ""
-            }
-          >
-            {parse(task.title)}
+          <span className="flex items-baseline gap-2">
+            <span
+              className={
+                task.completed === 100 ? "line-through text-gray-400" : ""
+              }
+            >
+              {parse(task.title)}
+            </span>
+            {task.dateCompleted && (
+              <span className="text-xs text-gray-400">
+                {new Date(task.dateCompleted).toLocaleDateString("en-GB")}
+              </span>
+            )}
           </span>
           {task.description && (
             <span className="text-sm text-gray-500">

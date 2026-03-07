@@ -12,6 +12,9 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
   const [completed, setCompleted] = useState(task.completed);
+  const [dateCompleted, setDateCompleted] = useState(
+    task.dateCompleted ? task.dateCompleted.slice(0, 10) : "",
+  );
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -23,7 +26,11 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onSave({ ...task, title: title.trim(), description, completed });
+    const fullDate =
+      completed === 100 && dateCompleted
+        ? new Date(dateCompleted).toISOString()
+        : null;
+    onSave({ ...task, title: title.trim(), description, completed, dateCompleted: fullDate });
   };
 
   return (
@@ -79,10 +86,35 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
               max={100}
               step={1}
               value={completed}
-              onChange={(e) => setCompleted(Number(e.target.value))}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                setCompleted(val);
+                if (val === 100 && !dateCompleted) {
+                  setDateCompleted(new Date().toISOString().slice(0, 10));
+                } else if (val < 100) {
+                  setDateCompleted("");
+                }
+              }}
               className="flex-1"
             />
           </div>
+          {completed === 100 && (
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="edit-date-completed"
+                className="text-sm text-gray-600 whitespace-nowrap"
+              >
+                Date completed
+              </label>
+              <input
+                id="edit-date-completed"
+                type="date"
+                value={dateCompleted}
+                onChange={(e) => setDateCompleted(e.target.value)}
+                className="flex-1 p-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+          )}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={onClose}>
               Cancel
