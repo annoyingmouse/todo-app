@@ -1,10 +1,10 @@
-import { vi } from "vitest";
+import { vi, beforeEach } from "vitest";
 
 // ✅ MUST be first
 vi.mock("../../sql/db-client", () => {
   let tasks = [
-    { id: 1, title: "Learn Testing", completed: false },
-    { id: 2, title: "hello", completed: false },
+    { id: 1, title: "Learn Testing", description: "", completed: 0 },
+    { id: 2, title: "hello", description: "", completed: 0 },
   ];
 
   return {
@@ -24,6 +24,10 @@ vi.mock("../../sql/db-client", () => {
 });
 
 import { screen, fireEvent } from "@testing-library/react";
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 import { renderWithQuery } from "./testUtils";
 import App from "../../App";
 
@@ -36,4 +40,14 @@ it("adds a new task to the list when submitted", async () => {
   fireEvent.click(screen.getByRole("button", { name: /add/i }));
 
   expect(await screen.findByText("Test Task")).toBeInTheDocument();
+});
+
+it("does not add a task when the title is empty", async () => {
+  renderWithQuery(<App />);
+
+  await screen.findByPlaceholderText(/enter new task/i);
+  fireEvent.click(screen.getByRole("button", { name: /add/i }));
+
+  const { taskApi } = await import("../../sql/db-client");
+  expect(taskApi.add).not.toHaveBeenCalled();
 });

@@ -15,8 +15,8 @@ export default function TaskList() {
   const sortOrder = useFilterStore((state) => state.sortOrder);
   const filteredTasks = tasks
     ?.filter((task: Task) => {
-      if (filter === "active") return !task.completed;
-      if (filter === "completed") return task.completed;
+      if (filter === "active") return task.completed < 100;
+      if (filter === "completed") return task.completed === 100;
       return true;
     })
     .filter((task: Task) =>

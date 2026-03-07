@@ -8,8 +8,14 @@ import NotFound from "./pages/NotFound";
 function App() {
   return (
     <BrowserRouter>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-blue-700 focus:rounded focus:shadow"
+      >
+        Skip to main content
+      </a>
       <Navigation />
-      <main>
+      <main id="main-content">
         <Suspense fallback={<div className="text-center p-4">Loading...</div>}>
           <Routes>
             <Route path="/" element={<HomePage />} />

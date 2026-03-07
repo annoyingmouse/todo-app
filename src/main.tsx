@@ -3,10 +3,6 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { initBackend } from "absurd-sql/dist/indexeddb-main-thread";
-import { dbWorker } from "./sql/worker-instance";
-
-initBackend(dbWorker);
 
 const queryClient = new QueryClient();
 

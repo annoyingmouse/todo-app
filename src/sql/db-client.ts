@@ -1,44 +1,127 @@
-import { dbWorker } from "./worker-instance";
+import init, { Database } from "@npiesco/absurder-sql";
 import { Task } from "../types/Task";
 
-type Deferred<T> = {
-  resolve: (value: T | PromiseLike<T>) => void;
-  reject: (reason?: unknown) => void;
+type ColumnValue =
+  | { type: "Null" }
+  | { type: "Integer"; value: number }
+  | { type: "Real"; value: number }
+  | { type: "Text"; value: string }
+  | { type: "Blob"; value: number[] }
+  | { type: "Date"; value: number }
+  | { type: "BigInt"; value: string };
+
+type QueryResult = {
+  columns: string[];
+  rows: { values: ColumnValue[] }[];
+  affectedRows: number;
+  lastInsertId: number | null;
 };
 
-// We use 'any' here because the Map holds mixed response types.
-// This is one of the few places where 'any' is architecturally necessary
-// unless using a complex discriminated union.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const pending = new Map<string, Deferred<any>>();
-
-dbWorker.onmessage = (e: MessageEvent) => {
-  if (!e.data?.msgId) return;
-  const { msgId, result, error } = e.data;
-  const request = pending.get(msgId);
-
-  if (request) {
-    if (error) {
-      request.reject(error);
-    } else {
-      request.resolve(result);
-    }
-    pending.delete(msgId);
+function toParam(val: unknown): ColumnValue {
+  if (val === null || val === undefined) return { type: "Null" };
+  if (typeof val === "string") return { type: "Text", value: val };
+  if (typeof val === "number") {
+    return Number.isInteger(val)
+      ? { type: "Integer", value: val }
+      : { type: "Real", value: val };
   }
-};
+  return { type: "Text", value: String(val) };
+}
 
-function send<T>(type: string, payload?: unknown): Promise<T> {
-  const msgId = Math.random().toString(36).slice(2);
-  return new Promise<T>((resolve, reject) => {
-    // TypeScript allows this because T satisfies the 'any' in the Map
-    pending.set(msgId, { resolve, reject });
-    dbWorker.postMessage({ type, payload, msgId });
+function rowsToTasks(result: QueryResult): Task[] {
+  return result.rows.map((row) => {
+    const obj: Record<string, unknown> = {};
+    result.columns.forEach((col, i) => {
+      const val = row.values[i];
+      obj[col] =
+        val.type === "Null"
+          ? null
+          : (val as { type: string; value: unknown }).value;
+    });
+    return {
+      ...obj,
+      completed: (obj.completed as number) ?? 0,
+    } as unknown as Task;
   });
 }
 
+let dbPromise: Promise<Database> | null = null;
+
+async function initDb(): Promise<Database> {
+  const wasmFetch = await fetch("/absurder_sql_bg.wasm");
+  const wasmResponse = new Response(wasmFetch.body, {
+    headers: { "Content-Type": "application/wasm" },
+  });
+  await init({ module_or_path: wasmResponse });
+  const database = await Database.newDatabase("tasks.db");
+  await database.execute(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      completed INTEGER NOT NULL DEFAULT 0
+    )
+  `);
+  try {
+    await database.execute(
+      "ALTER TABLE tasks ADD COLUMN description TEXT NOT NULL DEFAULT ''",
+    );
+  } catch {
+    // column already exists — safe to ignore
+  }
+  return database;
+}
+
+function getDb(): Promise<Database> {
+  if (!dbPromise) dbPromise = initDb();
+  return dbPromise;
+}
+
+async function closeDb(): Promise<void> {
+  if (!dbPromise) return;
+  const database = await dbPromise;
+  dbPromise = null;
+  await database.close();
+}
+
 export const taskApi = {
-  getAll: () => send<Task[]>("GET_TASKS"),
-  add: (task: Omit<Task, "id">) => send<{ id: number }>("ADD_TASK", task),
-  update: (task: Task) => send<void>("UPDATE_TASK", task),
-  delete: (id: number) => send<void>("DELETE_TASK", { id }),
+  async getAll(): Promise<Task[]> {
+    const database = await getDb();
+    const result = (await database.execute(
+      "SELECT * FROM tasks ORDER BY id DESC",
+    )) as QueryResult;
+    return rowsToTasks(result);
+  },
+
+  async add(task: Omit<Task, "id">): Promise<{ id: number }> {
+    const database = await getDb();
+    const result = (await database.executeWithParams(
+      "INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)",
+      [toParam(task.title), toParam(task.description), toParam(task.completed)],
+    )) as QueryResult;
+    await closeDb();
+    return { id: result.lastInsertId ?? 0 };
+  },
+
+  async update(task: Task): Promise<void> {
+    const database = await getDb();
+    await database.executeWithParams(
+      "UPDATE tasks SET title=?, description=?, completed=? WHERE id=?",
+      [
+        toParam(task.title),
+        toParam(task.description),
+        toParam(task.completed),
+        toParam(task.id),
+      ],
+    );
+    await closeDb();
+  },
+
+  async delete(id: number): Promise<void> {
+    const database = await getDb();
+    await database.executeWithParams("DELETE FROM tasks WHERE id=?", [
+      toParam(id),
+    ]);
+    await closeDb();
+  },
 };

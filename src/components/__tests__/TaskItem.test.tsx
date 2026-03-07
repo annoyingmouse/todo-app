@@ -1,37 +1,46 @@
-import { vi } from "vitest";
+import { vi, beforeEach } from "vitest";
 
-// ✅ MUST be first
-vi.mock("../../sql/db-client", () => {
-  let tasks = [
-    { id: 1, title: "Learn Testing", completed: false },
-    { id: 2, title: "hello", completed: false },
-  ];
+vi.mock("../../sql/db-client", () => ({
+  taskApi: {
+    getAll: vi.fn(),
+    add: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
 
-  return {
-    taskApi: {
-      getAll: vi.fn(async () => [...tasks]),
-      add: vi.fn(async (task) => {
-        const newTask = { id: Date.now(), ...task };
-        tasks.push(newTask);
-        return newTask;
-      }),
-      update: vi.fn(async (task) => task),
-      delete: vi.fn(async (id) => {
-        tasks = tasks.filter((t) => t.id !== id);
-      }),
-    },
-  };
-});
-
+import { taskApi } from "../../sql/db-client";
 import { renderWithQuery } from "./testUtils";
 import App from "../../App";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
+
+const initialTasks = [
+  { id: 1, title: "Learn Testing", description: "A test task", completed: 0 },
+  { id: 2, title: "hello", description: "", completed: 100 },
+];
+
+beforeEach(() => {
+  let tasks = initialTasks.map((t) => ({ ...t }));
+
+  vi.mocked(taskApi.getAll).mockImplementation(async () => [...tasks]);
+  vi.mocked(taskApi.add).mockImplementation(async (task) => {
+    const newTask = { id: Date.now(), ...task };
+    tasks.push(newTask);
+    return newTask;
+  });
+  vi.mocked(taskApi.update).mockImplementation(async (task) => {
+    tasks = tasks.map((t) => (t.id === task.id ? task : t));
+    return task;
+  });
+  vi.mocked(taskApi.delete).mockImplementation(async (id) => {
+    tasks = tasks.filter((t) => t.id !== id);
+  });
+});
 
 it("removes a task when delete is clicked", async () => {
   renderWithQuery(<App />);
 
   const taskItem = await screen.findByText(/learn testing/i);
-
   const listItem = taskItem.closest("li")!;
   const deleteButton = within(listItem).getByRole("button", {
     name: /delete/i,
@@ -41,5 +50,113 @@ it("removes a task when delete is clicked", async () => {
 
   await waitFor(() => {
     expect(screen.queryByText(/learn testing/i)).not.toBeInTheDocument();
+  });
+});
+
+it("shows description below task title", async () => {
+  renderWithQuery(<App />);
+
+  expect(await screen.findByText("A test task")).toBeInTheDocument();
+});
+
+it("opens edit modal when edit is clicked", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText(/learn testing/i);
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  expect(await screen.findByRole("dialog")).toBeInTheDocument();
+  expect(screen.getByDisplayValue("Learn Testing")).toBeInTheDocument();
+});
+
+it("saves updated title from edit modal", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText(/learn testing/i);
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  const titleInput = await screen.findByDisplayValue("Learn Testing");
+  fireEvent.change(titleInput, { target: { value: "Updated Task" } });
+  fireEvent.click(screen.getByRole("button", { name: /save/i }));
+
+  expect(await screen.findByText("Updated Task")).toBeInTheDocument();
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+it("applies line-through to completed tasks", async () => {
+  renderWithQuery(<App />);
+
+  const taskTitle = await screen.findByText("hello");
+  expect(taskTitle).toHaveClass("line-through");
+});
+
+it("saves updated description from edit modal", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText(/learn testing/i);
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  const dialog = await screen.findByRole("dialog");
+  const descriptionTextarea = within(dialog).getByLabelText(/description/i);
+  fireEvent.change(descriptionTextarea, {
+    target: { value: "New description" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /save/i }));
+
+  expect(await screen.findByText("New description")).toBeInTheDocument();
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+it("saves updated completion percentage from edit modal", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText(/learn testing/i);
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  const dialog = await screen.findByRole("dialog");
+  const slider = within(dialog).getByRole("slider");
+  fireEvent.change(slider, { target: { value: "75" } });
+  fireEvent.click(screen.getByRole("button", { name: /save/i }));
+
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+  expect(taskApi.update).toHaveBeenCalledWith(
+    expect.objectContaining({ completed: 75 }),
+  );
+});
+
+it("cancel button closes modal without saving changes", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText(/learn testing/i);
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  const titleInput = await screen.findByDisplayValue("Learn Testing");
+  fireEvent.change(titleInput, { target: { value: "Changed Title" } });
+  fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(screen.getByText("Learn Testing")).toBeInTheDocument();
+  expect(screen.queryByText("Changed Title")).not.toBeInTheDocument();
+});
+
+it("clicking the backdrop closes the modal without saving", async () => {
+  renderWithQuery(<App />);
+
+  const taskItem = await screen.findByText(/learn testing/i);
+  const listItem = taskItem.closest("li")!;
+  fireEvent.click(within(listItem).getByRole("button", { name: /edit/i }));
+
+  const dialog = await screen.findByRole("dialog");
+  fireEvent.click(dialog);
+
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

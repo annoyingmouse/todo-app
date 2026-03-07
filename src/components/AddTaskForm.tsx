@@ -4,14 +4,16 @@ import { useTasks } from "../hooks/useTasks";
 const AddTaskForm = () => {
   const [title, setTitle] = useState("");
   const { addTask } = useTasks();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    addTask({ title, completed: false });
+    addTask({ title, description: "", completed: 0 });
     setTitle("");
   };
+
   return (
-    <form onSubmit={handleSubmit} className="flex space-x-2 mb-4">
+    <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
       <label htmlFor="task-title" className="sr-only">
         New Task
       </label>
@@ -21,7 +23,8 @@ const AddTaskForm = () => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         className="flex-1 p-2 border border-gray-300 rounded"
-        placeholder="enter new task"
+        placeholder="Enter new task (description can be added via Edit)"
+        autoComplete="off"
       />
       <button
         type="submit"
@@ -32,4 +35,5 @@ const AddTaskForm = () => {
     </form>
   );
 };
+
 export default AddTaskForm;
