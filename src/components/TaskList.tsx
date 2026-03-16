@@ -14,7 +14,8 @@ export default function TaskList() {
   const filter = useFilterStore((state) => state.filter);
   const sortOrder = useFilterStore((state) => state.sortOrder);
   const filteredTasks = tasks
-    ?.filter((task: Task) => {
+    ?.filter((task: Task) => task.parentId === null)
+    .filter((task: Task) => {
       if (filter === "active") return task.completed < 100;
       if (filter === "completed") return task.completed === 100;
       return true;
@@ -34,7 +35,7 @@ export default function TaskList() {
         ? aDate.localeCompare(bDate)
         : bDate.localeCompare(aDate);
     });
-  if (isLoading) return <p>Loading tasks...</p>;
+  if (isLoading) return <p role="status">Loading tasks...</p>;
   if (isError) return <ErrorBanner errorMessage="Failed to fetch tasks." />;
   if (!tasks || tasks.length === 0)
     return (

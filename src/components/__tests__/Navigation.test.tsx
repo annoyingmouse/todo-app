@@ -6,6 +6,9 @@ vi.mock("../../sql/db-client", () => ({
     add: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    getDeleted: vi.fn(async () => []),
+    restore: vi.fn(async () => {}),
+    permanentDelete: vi.fn(async () => {}),
   },
 }));
 

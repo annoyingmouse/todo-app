@@ -6,6 +6,9 @@ vi.mock("../../sql/db-client", () => ({
     add: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    getDeleted: vi.fn(async () => []),
+    restore: vi.fn(async () => {}),
+    permanentDelete: vi.fn(async () => {}),
   },
 }));
 
@@ -16,9 +19,33 @@ import { screen, fireEvent, within } from "@testing-library/react";
 import { useFilterStore } from "../../store/FilterStore";
 
 const initialTasks = [
-  { id: 1, title: "Banana", description: "", completed: 0, dateCompleted: null },
-  { id: 2, title: "Apple", description: "", completed: 100, dateCompleted: "2025-06-01T10:00:00.000Z" },
-  { id: 3, title: "Cherry", description: "", completed: 50, dateCompleted: null },
+  {
+    id: 1,
+    title: "Banana",
+    description: "",
+    completed: 0,
+    dateCompleted: null,
+    parentId: null,
+    deletedAt: null,
+  },
+  {
+    id: 2,
+    title: "Apple",
+    description: "",
+    completed: 100,
+    dateCompleted: "2025-06-01T10:00:00.000Z",
+    parentId: null,
+    deletedAt: null,
+  },
+  {
+    id: 3,
+    title: "Cherry",
+    description: "",
+    completed: 50,
+    dateCompleted: null,
+    parentId: null,
+    deletedAt: null,
+  },
 ];
 
 beforeEach(() => {
@@ -136,7 +163,9 @@ it("sorts tasks with a dateCompleted before those without when sorting by date a
   renderWithQuery(<App />);
   await screen.findByText("Banana");
 
-  fireEvent.change(screen.getByRole("combobox"), { target: { value: "dateAsc" } });
+  fireEvent.change(screen.getByRole("combobox"), {
+    target: { value: "dateAsc" },
+  });
 
   const main = screen.getByRole("main");
   const items = within(main).getAllByRole("listitem");
@@ -149,7 +178,9 @@ it("sorts tasks with a dateCompleted before those without when sorting by date d
   renderWithQuery(<App />);
   await screen.findByText("Banana");
 
-  fireEvent.change(screen.getByRole("combobox"), { target: { value: "dateDesc" } });
+  fireEvent.change(screen.getByRole("combobox"), {
+    target: { value: "dateDesc" },
+  });
 
   const main = screen.getByRole("main");
   const items = within(main).getAllByRole("listitem");

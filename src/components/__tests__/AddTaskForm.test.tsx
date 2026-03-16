@@ -3,8 +3,24 @@ import { vi, beforeEach } from "vitest";
 // ✅ MUST be first
 vi.mock("../../sql/db-client", () => {
   let tasks = [
-    { id: 1, title: "Learn Testing", description: "", completed: 0 },
-    { id: 2, title: "hello", description: "", completed: 0 },
+    {
+      id: 1,
+      title: "Learn Testing",
+      description: "",
+      completed: 0,
+      dateCompleted: null,
+      parentId: null,
+      deletedAt: null,
+    },
+    {
+      id: 2,
+      title: "hello",
+      description: "",
+      completed: 0,
+      dateCompleted: null,
+      parentId: null,
+      deletedAt: null,
+    },
   ];
 
   return {
@@ -19,6 +35,9 @@ vi.mock("../../sql/db-client", () => {
       delete: vi.fn(async (id) => {
         tasks = tasks.filter((t) => t.id !== id);
       }),
+      getDeleted: vi.fn(async () => []),
+      restore: vi.fn(async () => {}),
+      permanentDelete: vi.fn(async () => {}),
     },
   };
 });

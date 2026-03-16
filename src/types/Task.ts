@@ -4,4 +4,6 @@ export type Task = {
   description: string;
   completed: number;
   dateCompleted: string | null;
+  parentId: number | null;
+  deletedAt: string | null;
 };

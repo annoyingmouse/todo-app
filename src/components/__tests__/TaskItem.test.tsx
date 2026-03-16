@@ -6,6 +6,9 @@ vi.mock("../../sql/db-client", () => ({
     add: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    getDeleted: vi.fn(async () => []),
+    restore: vi.fn(async () => {}),
+    permanentDelete: vi.fn(async () => {}),
   },
 }));
 
@@ -15,8 +18,24 @@ import App from "../../App";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 
 const initialTasks = [
-  { id: 1, title: "Learn Testing", description: "A test task", completed: 0, dateCompleted: null },
-  { id: 2, title: "hello", description: "", completed: 100, dateCompleted: "2025-01-15T12:00:00.000Z" },
+  {
+    id: 1,
+    title: "Learn Testing",
+    description: "A test task",
+    completed: 0,
+    dateCompleted: null,
+    parentId: null,
+    deletedAt: null,
+  },
+  {
+    id: 2,
+    title: "hello",
+    description: "",
+    completed: 100,
+    dateCompleted: "2025-01-15T12:00:00.000Z",
+    parentId: null,
+    deletedAt: null,
+  },
 ];
 
 beforeEach(() => {

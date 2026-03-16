@@ -13,6 +13,11 @@ const Navigation = () => {
             About
           </Link>
         </li>
+        <li>
+          <Link to="/trash" className="hover:underline">
+            Trash
+          </Link>
+        </li>
       </ul>
     </nav>
   );

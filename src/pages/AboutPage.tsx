@@ -7,7 +7,8 @@ const libraries = [
   {
     name: "TypeScript",
     url: "https://www.typescriptlang.org",
-    description: "Typed superset of JavaScript for safer, more maintainable code.",
+    description:
+      "Typed superset of JavaScript for safer, more maintainable code.",
   },
   {
     name: "Vite",
@@ -22,7 +23,8 @@ const libraries = [
   {
     name: "TanStack Query",
     url: "https://tanstack.com/query",
-    description: "Async state management for data fetching, caching, and synchronisation.",
+    description:
+      "Async state management for data fetching, caching, and synchronisation.",
   },
   {
     name: "React Router",
@@ -43,7 +45,8 @@ const libraries = [
   {
     name: "react-markdown",
     url: "https://github.com/remarkjs/react-markdown",
-    description: "Renders Markdown safely as React elements in task descriptions.",
+    description:
+      "Renders Markdown safely as React elements in task descriptions.",
   },
   {
     name: "Vitest",
@@ -65,11 +68,12 @@ const AboutPage = () => {
       <section className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Purpose</h2>
         <p className="text-gray-700">
-          A task manager that runs entirely in the browser — no backend required.
-          Tasks are stored in a SQLite database via WebAssembly and persisted to
-          IndexedDB, so they survive page refreshes. Each task has a title,
-          Markdown-enabled description, and a completion percentage. Tasks can be
-          filtered by status, searched by title, and sorted alphabetically.
+          A task manager that runs entirely in the browser — no backend
+          required. Tasks are stored in a SQLite database via WebAssembly and
+          persisted to IndexedDB, so they survive page refreshes. Each task has
+          a title, Markdown-enabled description, and a completion percentage.
+          Tasks can be filtered by status, searched by title, and sorted
+          alphabetically.
         </p>
       </section>
 
@@ -85,6 +89,7 @@ const AboutPage = () => {
                 className="font-medium text-blue-600 hover:underline"
               >
                 {name}
+                <span className="sr-only"> (opens in new tab)</span>
               </a>
               <p className="text-sm text-gray-600 mt-0.5">{description}</p>
             </li>

@@ -8,7 +8,13 @@ const AddTaskForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    addTask({ title, description: "", completed: 0 });
+    addTask({
+      title,
+      description: "",
+      completed: 0,
+      dateCompleted: null,
+      parentId: null,
+    });
     setTitle("");
   };
 

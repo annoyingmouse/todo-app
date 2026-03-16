@@ -37,14 +37,17 @@ export function useTasks() {
       await queryClient.cancelQueries({ queryKey });
       const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
       queryClient.setQueryData<Task[]>(queryKey, (old) =>
-        old?.filter((t) => t.id !== id),
+        old?.filter((t) => t.id !== id && t.parentId !== id),
       );
       return { previousTasks };
     },
     onError: (_, __, context) => {
       queryClient.setQueryData(queryKey, context?.previousTasks);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["trash"] });
+    },
   });
 
   const addMutation = useMutation({

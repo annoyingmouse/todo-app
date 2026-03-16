@@ -42,6 +42,8 @@ function rowsToTasks(result: QueryResult): Task[] {
       ...obj,
       completed: (obj.completed as number) ?? 0,
       dateCompleted: (obj.date_completed as string | null) ?? null,
+      parentId: (obj.parent_id as number | null) ?? null,
+      deletedAt: (obj.deleted_at as string | null) ?? null,
     } as unknown as Task;
   });
 }
@@ -71,9 +73,19 @@ async function initDb(): Promise<Database> {
     // column already exists — safe to ignore
   }
   try {
+    await database.execute("ALTER TABLE tasks ADD COLUMN date_completed TEXT");
+  } catch {
+    // column already exists — safe to ignore
+  }
+  try {
     await database.execute(
-      "ALTER TABLE tasks ADD COLUMN date_completed TEXT",
+      "ALTER TABLE tasks ADD COLUMN parent_id INTEGER REFERENCES tasks(id)",
     );
+  } catch {
+    // column already exists — safe to ignore
+  }
+  try {
+    await database.execute("ALTER TABLE tasks ADD COLUMN deleted_at TEXT");
   } catch {
     // column already exists — safe to ignore
   }
@@ -96,7 +108,7 @@ export const taskApi = {
   async getAll(): Promise<Task[]> {
     const database = await getDb();
     const result = (await database.execute(
-      "SELECT * FROM tasks ORDER BY id DESC",
+      "SELECT * FROM tasks WHERE deleted_at IS NULL ORDER BY id DESC",
     )) as QueryResult;
     return rowsToTasks(result);
   },
@@ -106,12 +118,13 @@ export const taskApi = {
     const dateCompleted =
       task.completed === 100 ? new Date().toISOString() : null;
     const result = (await database.executeWithParams(
-      "INSERT INTO tasks (title, description, completed, date_completed) VALUES (?, ?, ?, ?)",
+      "INSERT INTO tasks (title, description, completed, date_completed, parent_id) VALUES (?, ?, ?, ?, ?)",
       [
         toParam(task.title),
         toParam(task.description),
         toParam(task.completed),
         toParam(dateCompleted),
+        toParam(task.parentId ?? null),
       ],
     )) as QueryResult;
     await closeDb();
@@ -139,9 +152,63 @@ export const taskApi = {
 
   async delete(id: number): Promise<void> {
     const database = await getDb();
-    await database.executeWithParams("DELETE FROM tasks WHERE id=?", [
-      toParam(id),
-    ]);
+    const now = new Date().toISOString();
+    await database.executeWithParams(
+      `WITH RECURSIVE subtree(id) AS (
+        SELECT id FROM tasks WHERE id=?
+        UNION ALL
+        SELECT t.id FROM tasks t INNER JOIN subtree s ON t.parent_id=s.id
+      )
+      UPDATE tasks SET deleted_at=? WHERE id IN (SELECT id FROM subtree)`,
+      [toParam(id), toParam(now)],
+    );
+    await closeDb();
+  },
+
+  async getDeleted(): Promise<Task[]> {
+    const database = await getDb();
+    const result = (await database.execute(
+      "SELECT * FROM tasks WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC",
+    )) as QueryResult;
+    return rowsToTasks(result);
+  },
+
+  async restore(id: number): Promise<void> {
+    const database = await getDb();
+    // Restore all descendants (the task + its entire subtree)
+    await database.executeWithParams(
+      `WITH RECURSIVE subtree(id) AS (
+        SELECT id FROM tasks WHERE id=?
+        UNION ALL
+        SELECT t.id FROM tasks t INNER JOIN subtree s ON t.parent_id=s.id
+      )
+      UPDATE tasks SET deleted_at=NULL WHERE id IN (SELECT id FROM subtree)`,
+      [toParam(id)],
+    );
+    // Also restore all ancestors that were deleted
+    await database.executeWithParams(
+      `WITH RECURSIVE ancestors(id, parent_id) AS (
+        SELECT id, parent_id FROM tasks WHERE id=?
+        UNION ALL
+        SELECT t.id, t.parent_id FROM tasks t INNER JOIN ancestors a ON t.id=a.parent_id
+      )
+      UPDATE tasks SET deleted_at=NULL WHERE id IN (SELECT id FROM ancestors)`,
+      [toParam(id)],
+    );
+    await closeDb();
+  },
+
+  async permanentDelete(id: number): Promise<void> {
+    const database = await getDb();
+    await database.executeWithParams(
+      `WITH RECURSIVE subtree(id) AS (
+        SELECT id FROM tasks WHERE id=?
+        UNION ALL
+        SELECT t.id FROM tasks t INNER JOIN subtree s ON t.parent_id=s.id
+      )
+      DELETE FROM tasks WHERE id IN (SELECT id FROM subtree)`,
+      [toParam(id)],
+    );
     await closeDb();
   },
 };

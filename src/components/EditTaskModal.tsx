@@ -30,7 +30,13 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
       completed === 100 && dateCompleted
         ? new Date(dateCompleted).toISOString()
         : null;
-    onSave({ ...task, title: title.trim(), description, completed, dateCompleted: fullDate });
+    onSave({
+      ...task,
+      title: title.trim(),
+      description,
+      completed,
+      dateCompleted: fullDate,
+    });
   };
 
   return (
@@ -46,84 +52,84 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
         if (e.target === dialogRef.current) onClose();
       }}
     >
-        <h2 id="edit-modal-title" className="text-lg font-semibold mb-4">
-          Edit Task
-        </h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label htmlFor="edit-task-title" className="sr-only">
-            Task title
+      <h2 id="edit-modal-title" className="text-lg font-semibold mb-4">
+        Edit Task
+      </h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <label htmlFor="edit-task-title" className="sr-only">
+          Task title
+        </label>
+        <input
+          id="edit-task-title"
+          ref={inputRef}
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+        <label htmlFor="edit-task-description" className="sr-only">
+          Description
+        </label>
+        <textarea
+          id="edit-task-description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded resize-none"
+          placeholder="Description (optional)"
+          rows={3}
+        />
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="edit-task-pct"
+            className="text-sm text-gray-600 whitespace-nowrap"
+          >
+            {completed}% complete
           </label>
           <input
-            id="edit-task-title"
-            ref={inputRef}
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
+            id="edit-task-pct"
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={completed}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setCompleted(val);
+              if (val === 100 && !dateCompleted) {
+                setDateCompleted(new Date().toISOString().slice(0, 10));
+              } else if (val < 100) {
+                setDateCompleted("");
+              }
+            }}
+            className="flex-1"
           />
-          <label htmlFor="edit-task-description" className="sr-only">
-            Description
-          </label>
-          <textarea
-            id="edit-task-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded resize-none"
-            placeholder="Description (optional)"
-            rows={3}
-          />
+        </div>
+        {completed === 100 && (
           <div className="flex items-center gap-2">
             <label
-              htmlFor="edit-task-pct"
+              htmlFor="edit-date-completed"
               className="text-sm text-gray-600 whitespace-nowrap"
             >
-              {completed}% complete
+              Date completed
             </label>
             <input
-              id="edit-task-pct"
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={completed}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setCompleted(val);
-                if (val === 100 && !dateCompleted) {
-                  setDateCompleted(new Date().toISOString().slice(0, 10));
-                } else if (val < 100) {
-                  setDateCompleted("");
-                }
-              }}
-              className="flex-1"
+              id="edit-date-completed"
+              type="date"
+              value={dateCompleted}
+              onChange={(e) => setDateCompleted(e.target.value)}
+              className="flex-1 p-2 border border-gray-300 rounded text-sm"
             />
           </div>
-          {completed === 100 && (
-            <div className="flex items-center gap-2">
-              <label
-                htmlFor="edit-date-completed"
-                className="text-sm text-gray-600 whitespace-nowrap"
-              >
-                Date completed
-              </label>
-              <input
-                id="edit-date-completed"
-                type="date"
-                value={dateCompleted}
-                onChange={(e) => setDateCompleted(e.target.value)}
-                className="flex-1 p-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-          )}
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
-          </div>
-        </form>
+        )}
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary">
+            Save
+          </Button>
+        </div>
+      </form>
     </dialog>
   );
 };

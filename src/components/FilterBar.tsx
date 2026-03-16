@@ -9,6 +9,7 @@ export default function FilterBar() {
         <button
           key={option}
           onClick={() => setFilter(option)}
+          aria-pressed={filter === option}
           className={`px-3 py-1 rounded ${
             filter === option ? "bg-blue-700 text-white" : "bg-gray-200"
           }`}

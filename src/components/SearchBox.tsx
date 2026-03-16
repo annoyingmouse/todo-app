@@ -22,6 +22,7 @@ export default function SearchBox() {
       <button
         className="absolute right-0 inset-y-0 flex items-center"
         onClick={() => setSearchQuery("")}
+        aria-label="Clear search"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -29,6 +30,7 @@ export default function SearchBox() {
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
