@@ -180,6 +180,48 @@ it("parent task has no slider when it has subtasks", async () => {
   expect(within(parentLi).queryByRole("slider")).toBeNull();
 });
 
+it("collapse button hides subtasks and expand button shows them again", async () => {
+  setupTasks([parent, subtask]);
+  renderWithQuery(<App />);
+
+  await screen.findByText("Subtask");
+
+  const parentLi = screen.getByText("Parent Task").closest("li")!;
+  const collapseBtn = within(parentLi).getByRole("button", {
+    name: /collapse subtasks/i,
+  });
+  expect(collapseBtn).toHaveAttribute("aria-expanded", "true");
+
+  fireEvent.click(collapseBtn);
+
+  await waitFor(() => {
+    expect(screen.queryByText("Subtask")).not.toBeInTheDocument();
+  });
+  expect(
+    within(parentLi).getByRole("button", { name: /expand subtasks/i }),
+  ).toHaveAttribute("aria-expanded", "false");
+
+  fireEvent.click(
+    within(parentLi).getByRole("button", { name: /expand subtasks/i }),
+  );
+  expect(await screen.findByText("Subtask")).toBeInTheDocument();
+});
+
+it("collapse button is not shown for tasks without subtasks", async () => {
+  setupTasks([parent]);
+  renderWithQuery(<App />);
+
+  const parentEl = await screen.findByText("Parent Task");
+  const listItem = parentEl.closest("li")!;
+
+  expect(
+    within(listItem).queryByRole("button", { name: /collapse subtasks/i }),
+  ).not.toBeInTheDocument();
+  expect(
+    within(listItem).queryByRole("button", { name: /expand subtasks/i }),
+  ).not.toBeInTheDocument();
+});
+
 it("deleting a parent task also removes its subtask", async () => {
   setupTasks([parent, subtask]);
   renderWithQuery(<App />);

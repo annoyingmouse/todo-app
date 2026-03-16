@@ -19,6 +19,7 @@ const TaskItem: React.FC<TaskProps> = ({ task }) => {
   const [pct, setPct] = useState(task.completed);
   const [addingChild, setAddingChild] = useState(false);
   const [childTitle, setChildTitle] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
 
   const derivedPct =
     children.length > 0
@@ -66,6 +67,14 @@ const TaskItem: React.FC<TaskProps> = ({ task }) => {
   return (
     <>
       <li className="flex items-center gap-2 border p-2 rounded">
+        {children.length > 0 && (
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            className={`text-xs w-5 text-gray-500 shrink-0 font-mono transition-transform duration-300 ${collapsed ? "" : "rotate-90"}`}
+            aria-label={collapsed ? "Expand subtasks" : "Collapse subtasks"}
+            aria-expanded={!collapsed}
+          >▶</button>
+        )}
         <span className="flex-1 flex flex-col">
           <span className="flex items-baseline gap-2">
             <span
@@ -156,7 +165,7 @@ const TaskItem: React.FC<TaskProps> = ({ task }) => {
           </form>
         </li>
       )}
-      {children.length > 0 && (
+      {children.length > 0 && !collapsed && (
         <ul className="ml-6 mt-1 space-y-1">
           {children.map((child) => (
             <TaskItem task={child} key={child.id} />
