@@ -14,6 +14,7 @@ const AddTaskForm = () => {
       completed: 0,
       dateCompleted: null,
       parentId: null,
+      deletedAt: null,
     });
     setTitle("");
   };

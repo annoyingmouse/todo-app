@@ -7,14 +7,15 @@ import type { Task } from "../types/Task";
 import EmptyState from "./EmptyState";
 import ErrorBanner from "./ErrorBanner";
 import TaskItem from "./TaskItem";
+import { sortTasks } from "../utils/sortTasks";
 
 export default function TaskList() {
   const { tasks, isLoading, isError } = useTasks();
   const searchQuery = useFilterStore((state) => state.searchQuery);
   const filter = useFilterStore((state) => state.filter);
   const sortOrder = useFilterStore((state) => state.sortOrder);
-  const filteredTasks = tasks
-    ?.filter((task: Task) => task.parentId === null)
+  const filtered = (tasks ?? [])
+    .filter((task: Task) => task.parentId === null)
     .filter((task: Task) => {
       if (filter === "active") return task.completed < 100;
       if (filter === "completed") return task.completed === 100;
@@ -22,19 +23,8 @@ export default function TaskList() {
     })
     .filter((task: Task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    .sort((a: Task, b: Task) => {
-      if (sortOrder === "asc") return a.title.localeCompare(b.title);
-      if (sortOrder === "desc") return b.title.localeCompare(a.title);
-      const aDate = a.dateCompleted ?? "";
-      const bDate = b.dateCompleted ?? "";
-      if (!aDate && !bDate) return 0;
-      if (!aDate) return 1;
-      if (!bDate) return -1;
-      return sortOrder === "dateAsc"
-        ? aDate.localeCompare(bDate)
-        : bDate.localeCompare(aDate);
-    });
+    );
+  const filteredTasks = sortTasks(filtered, sortOrder);
   if (isLoading) return <p role="status">Loading tasks...</p>;
   if (isError) return <ErrorBanner errorMessage="Failed to fetch tasks." />;
   if (!tasks || tasks.length === 0)

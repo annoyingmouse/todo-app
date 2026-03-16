@@ -3,12 +3,18 @@ import parse from "html-react-parser";
 import Markdown from "react-markdown";
 import type { TaskProps } from "../types/TaskProps";
 import { useTasks } from "../hooks/useTasks";
+import { useFilterStore } from "../store/FilterStore";
 import EditTaskModal from "./EditTaskModal";
 import type { Task } from "../types/Task";
+import { sortTasks } from "../utils/sortTasks";
 
 const TaskItem: React.FC<TaskProps> = ({ task }) => {
   const { tasks, updateTask, deleteTask, addTask } = useTasks();
-  const children = tasks.filter((t) => t.parentId === task.id);
+  const sortOrder = useFilterStore((state) => state.sortOrder);
+  const children = sortTasks(
+    tasks.filter((t) => t.parentId === task.id),
+    sortOrder,
+  );
   const [editing, setEditing] = useState(false);
   const [pct, setPct] = useState(task.completed);
   const [addingChild, setAddingChild] = useState(false);
@@ -51,6 +57,7 @@ const TaskItem: React.FC<TaskProps> = ({ task }) => {
       completed: 0,
       dateCompleted: null,
       parentId: task.id,
+      deletedAt: null,
     });
     setChildTitle("");
     setAddingChild(false);

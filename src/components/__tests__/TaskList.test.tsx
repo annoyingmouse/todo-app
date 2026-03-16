@@ -1,4 +1,5 @@
 import { vi, beforeEach } from "vitest";
+import type { Task } from "../../types/Task";
 
 vi.mock("../../sql/db-client", () => ({
   taskApi: {
@@ -49,17 +50,16 @@ const initialTasks = [
 ];
 
 beforeEach(() => {
-  let tasks = initialTasks.map((t) => ({ ...t }));
+  let tasks: Task[] = initialTasks.map((t) => ({ ...t }));
 
   vi.mocked(taskApi.getAll).mockImplementation(async () => [...tasks]);
   vi.mocked(taskApi.add).mockImplementation(async (task) => {
-    const newTask = { id: Date.now(), ...task };
+    const newTask = { id: Date.now(), ...task } as (typeof tasks)[number];
     tasks.push(newTask);
-    return newTask;
+    return { id: newTask.id };
   });
   vi.mocked(taskApi.update).mockImplementation(async (task) => {
     tasks = tasks.map((t) => (t.id === task.id ? task : t));
-    return task;
   });
   vi.mocked(taskApi.delete).mockImplementation(async (id) => {
     tasks = tasks.filter((t) => t.id !== id);
