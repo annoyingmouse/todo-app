@@ -1,7 +1,7 @@
 import { Suspense, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
-import DevNoticeModal, { isDevNoticeAcknowledged } from "./components/DevNoticeModal";
+import DevNoticeModal from "./components/DevNoticeModal";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import TrashPage from "./pages/TrashPage";
@@ -9,7 +9,9 @@ import DataPage from "./pages/DataPage";
 import NotFound from "./pages/NotFound";
 
 function App() {
-  const [acknowledged, setAcknowledged] = useState(isDevNoticeAcknowledged);
+  const [acknowledged, setAcknowledged] = useState(
+    () => localStorage.getItem("dev-notice-acknowledged") === "true",
+  );
 
   return (
     <BrowserRouter>

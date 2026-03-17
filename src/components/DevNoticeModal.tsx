@@ -1,9 +1,5 @@
 const STORAGE_KEY = "dev-notice-acknowledged";
 
-export function isDevNoticeAcknowledged(): boolean {
-  return localStorage.getItem(STORAGE_KEY) === "true";
-}
-
 type Props = {
   onAcknowledge: () => void;
 };

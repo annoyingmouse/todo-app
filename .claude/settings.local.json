@@ -10,7 +10,8 @@
       "Bash(npm install:*)",
       "Read(//mnt/c/Users/annoy/WebstormProjects/**)",
       "Bash(npx vitest:*)",
-      "WebFetch(domain:docs.github.com)"
+      "WebFetch(domain:docs.github.com)",
+      "Bash(npm run:*)"
     ]
   }
 }
