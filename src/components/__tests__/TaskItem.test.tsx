@@ -40,6 +40,7 @@ const initialTasks = [
 ];
 
 beforeEach(() => {
+  localStorage.setItem("dev-notice-acknowledged", "true");
   let tasks: Task[] = initialTasks.map((t) => ({ ...t }));
 
   vi.mocked(taskApi.getAll).mockImplementation(async () => [...tasks]);

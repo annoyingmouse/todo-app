@@ -1,6 +1,7 @@
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
+import DevNoticeModal, { isDevNoticeAcknowledged } from "./components/DevNoticeModal";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import TrashPage from "./pages/TrashPage";
@@ -8,6 +9,8 @@ import DataPage from "./pages/DataPage";
 import NotFound from "./pages/NotFound";
 
 function App() {
+  const [acknowledged, setAcknowledged] = useState(isDevNoticeAcknowledged);
+
   return (
     <BrowserRouter>
       <a
@@ -16,6 +19,9 @@ function App() {
       >
         Skip to main content
       </a>
+      {!acknowledged && (
+        <DevNoticeModal onAcknowledge={() => setAcknowledged(true)} />
+      )}
       <Navigation />
       <main id="main-content">
         <Suspense fallback={<div className="text-center p-4">Loading...</div>}>

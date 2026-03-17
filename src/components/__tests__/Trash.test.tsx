@@ -127,6 +127,7 @@ async function goToHome() {
 beforeEach(() => {
   window.history.pushState({}, "", "/");
   vi.clearAllMocks();
+  localStorage.setItem("dev-notice-acknowledged", "true");
 });
 
 it("deleting a task removes it from the home page", async () => {

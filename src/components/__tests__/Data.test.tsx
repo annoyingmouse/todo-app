@@ -59,6 +59,7 @@ beforeEach(() => {
   window.history.pushState({}, "", "/");
   vi.clearAllMocks();
   vi.mocked(URL.createObjectURL).mockReturnValue("blob:mock-url");
+  localStorage.setItem("dev-notice-acknowledged", "true");
 });
 
 it("shows Export and Import sections on the Data page", async () => {
