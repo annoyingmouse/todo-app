@@ -4,6 +4,7 @@ import Navigation from "./components/Navigation";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import TrashPage from "./pages/TrashPage";
+import DataPage from "./pages/DataPage";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/trash" element={<TrashPage />} />
+            <Route path="/data" element={<DataPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

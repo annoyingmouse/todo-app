@@ -211,4 +211,32 @@ export const taskApi = {
     );
     await closeDb();
   },
+
+  async exportAll(): Promise<Task[]> {
+    const database = await getDb();
+    const result = (await database.execute(
+      "SELECT * FROM tasks ORDER BY id ASC",
+    )) as QueryResult;
+    return rowsToTasks(result);
+  },
+
+  async importAll(tasks: Task[]): Promise<void> {
+    const database = await getDb();
+    await database.execute("DELETE FROM tasks");
+    for (const task of tasks) {
+      await database.executeWithParams(
+        "INSERT INTO tasks (id, title, description, completed, date_completed, parent_id, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+          toParam(task.id),
+          toParam(task.title),
+          toParam(task.description),
+          toParam(task.completed),
+          toParam(task.dateCompleted),
+          toParam(task.parentId),
+          toParam(task.deletedAt),
+        ],
+      );
+    }
+    await closeDb();
+  },
 };

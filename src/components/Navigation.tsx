@@ -9,13 +9,18 @@ const Navigation = () => {
           </Link>
         </li>
         <li>
-          <Link to="/about" className="hover:underline">
-            About
+          <Link to="/trash" className="hover:underline">
+            Trash
           </Link>
         </li>
         <li>
-          <Link to="/trash" className="hover:underline">
-            Trash
+          <Link to="/data" className="hover:underline">
+            Data
+          </Link>
+        </li>
+        <li>
+          <Link to="/about" className="hover:underline">
+            About
           </Link>
         </li>
       </ul>
