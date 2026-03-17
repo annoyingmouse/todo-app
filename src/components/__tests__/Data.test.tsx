@@ -120,10 +120,10 @@ it("selecting a file with invalid JSON shows an error", async () => {
 
   uploadFile("not valid json {{ at all");
 
-  await waitFor(() => {
-    expect(screen.queryByRole("button", { name: /confirm import/i })).not.toBeInTheDocument();
-  });
-  expect(screen.getByText(/invalid json/i)).toBeInTheDocument();
+  expect(await screen.findByText(/invalid json/i)).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /confirm import/i }),
+  ).not.toBeInTheDocument();
 });
 
 it("selecting a file whose JSON is not an array shows an error", async () => {
