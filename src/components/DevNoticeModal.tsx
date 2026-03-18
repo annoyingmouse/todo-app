@@ -44,7 +44,7 @@ const DevNoticeModal = ({ onAcknowledge }: Props) => {
       </p>
       <button
         onClick={handleAcknowledge}
-        className="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded"
+        className="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded"
         autoFocus
       >
         I understand, continue

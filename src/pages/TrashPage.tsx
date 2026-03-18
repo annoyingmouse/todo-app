@@ -43,11 +43,11 @@ function TrashItem({
                 subtask
               </span>
             )}
-            <span className="line-through text-gray-400 break-words min-w-0">
+            <span className="line-through text-gray-500 break-words min-w-0">
               {parse(task.title)}
             </span>
             {task.deletedAt && (
-              <span className="text-xs text-gray-400 shrink-0">
+              <span className="text-xs text-gray-500 shrink-0">
                 deleted {new Date(task.deletedAt).toLocaleDateString("en-GB")}
               </span>
             )}

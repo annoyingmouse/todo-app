@@ -98,13 +98,13 @@ const TaskItem: React.FC<TaskProps> = ({ task, depth = 0 }) => {
               <span className="flex items-baseline gap-2 flex-wrap">
                 <span
                   className={
-                    displayPct === 100 ? "line-through text-gray-400" : ""
+                    displayPct === 100 ? "line-through text-gray-500" : ""
                   }
                 >
                   {parse(task.title)}
                 </span>
                 {task.dateCompleted && (
-                  <span className="text-xs text-gray-400 shrink-0">
+                  <span className="text-xs text-gray-500 shrink-0">
                     {new Date(task.dateCompleted).toLocaleDateString("en-GB")}
                   </span>
                 )}
