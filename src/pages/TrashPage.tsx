@@ -4,12 +4,19 @@ import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
 import type { Task } from "../types/Task";
 
+const DEPTH_ACCENT = [
+  "",
+  "border-l-4 border-l-blue-400",
+  "border-l-4 border-l-amber-400",
+  "border-l-4 border-l-purple-400",
+];
+
 type TrashItemProps = {
   task: Task;
   allDeleted: Task[];
   restore: (id: number) => void;
   permanentDelete: (id: number) => void;
-  isChild?: boolean;
+  depth?: number;
 };
 
 function TrashItem({
@@ -17,45 +24,57 @@ function TrashItem({
   allDeleted,
   restore,
   permanentDelete,
-  isChild = false,
+  depth = 0,
 }: TrashItemProps) {
   const children = allDeleted.filter((t) => t.parentId === task.id);
+  const accentClass =
+    depth > 0 ? DEPTH_ACCENT[Math.min(depth, DEPTH_ACCENT.length - 1)] : "";
 
   return (
-    <li>
-      <div className="flex items-center gap-2 border p-2 rounded">
-        <span className="flex-1 flex items-baseline gap-2">
-          {isChild && (
-            <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded border border-gray-300 shrink-0">
-              subtask
+    <li className={depth === 0 ? "border rounded overflow-hidden" : ""}>
+      <div
+        className={`flex flex-col gap-2 p-2 sm:flex-row sm:items-center sm:gap-2 ${accentClass}`}
+      >
+        {/* Title row */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="flex-1 flex items-baseline gap-2 flex-wrap min-w-0">
+            {task.parentId !== null && (
+              <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded border border-gray-300 shrink-0">
+                subtask
+              </span>
+            )}
+            <span className="line-through text-gray-400 break-words min-w-0">
+              {parse(task.title)}
             </span>
-          )}
-          <span className="line-through text-gray-400">
-            {parse(task.title)}
+            {task.deletedAt && (
+              <span className="text-xs text-gray-400 shrink-0">
+                deleted {new Date(task.deletedAt).toLocaleDateString("en-GB")}
+              </span>
+            )}
           </span>
-          {task.deletedAt && (
-            <span className="text-xs text-gray-400">
-              deleted {new Date(task.deletedAt).toLocaleDateString("en-GB")}
-            </span>
-          )}
-        </span>
-        <button
-          onClick={() => restore(task.id)}
-          className="text-sm px-2 py-1 bg-green-200 rounded"
-          aria-label={`Restore ${task.title}`}
-        >
-          Restore
-        </button>
-        <button
-          onClick={() => permanentDelete(task.id)}
-          className="text-sm px-2 py-1 bg-red-300 rounded"
-          aria-label={`Delete ${task.title} permanently`}
-        >
-          Delete permanently
-        </button>
+        </div>
+        {/* Buttons row */}
+        <div className="flex items-center justify-between gap-2 shrink-0 sm:justify-normal">
+          <button
+            onClick={() => restore(task.id)}
+            className="text-sm px-2 py-1 bg-green-200 rounded"
+            aria-label={`Restore ${task.title}`}
+          >
+            Restore
+          </button>
+          <button
+            onClick={() => permanentDelete(task.id)}
+            className="text-sm px-2 py-1 bg-red-300 rounded"
+            aria-label={`Delete ${task.title} permanently`}
+          >
+            Delete permanently
+          </button>
+        </div>
       </div>
+
+      {/* Children nested inside parent card */}
       {children.length > 0 && (
-        <ul className="ml-6 mt-1 space-y-1">
+        <ul className="border-t divide-y bg-gray-50">
           {children.map((child) => (
             <TrashItem
               key={child.id}
@@ -63,7 +82,7 @@ function TrashItem({
               allDeleted={allDeleted}
               restore={restore}
               permanentDelete={permanentDelete}
-              isChild
+              depth={depth + 1}
             />
           ))}
         </ul>
@@ -98,7 +117,6 @@ const TrashPage = () => {
               allDeleted={deletedTasks}
               restore={restore}
               permanentDelete={permanentDelete}
-              isChild={task.parentId !== null}
             />
           ))}
         </ul>

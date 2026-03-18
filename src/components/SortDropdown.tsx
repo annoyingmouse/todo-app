@@ -3,7 +3,7 @@ export default function SortDropdown() {
   const sortOrder = useFilterStore((state) => state.sortOrder);
   const setSortOrder = useFilterStore((state) => state.setSortOrder);
   return (
-    <>
+    <div>
       <label htmlFor="resultSort" className="sr-only">
         Sort
       </label>
@@ -22,6 +22,6 @@ export default function SortDropdown() {
         <option value="dateAsc">Date completed ↑</option>
         <option value="dateDesc">Date completed ↓</option>
       </select>
-    </>
+    </div>
   );
 }

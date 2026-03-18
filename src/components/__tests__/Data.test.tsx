@@ -99,9 +99,7 @@ it("selecting a valid JSON file shows the import preview with task count", async
   expect(
     screen.getByRole("button", { name: /confirm import/i }),
   ).toBeInTheDocument();
-  expect(
-    screen.getByRole("button", { name: /cancel/i }),
-  ).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
 });
 
 it("shows singular 'task' when importing exactly one task", async () => {

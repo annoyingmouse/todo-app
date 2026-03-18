@@ -41,12 +41,8 @@ it("renders the Data page when the Data link is clicked", async () => {
   expect(
     await screen.findByRole("heading", { name: /^data$/i }),
   ).toBeInTheDocument();
-  expect(
-    screen.getByRole("heading", { name: /export/i }),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByRole("heading", { name: /import/i }),
-  ).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /export/i })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /import/i })).toBeInTheDocument();
 });
 
 it("renders the ER diagram on the About page", async () => {

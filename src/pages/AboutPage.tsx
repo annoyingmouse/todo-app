@@ -39,9 +39,19 @@ function ERDiagram() {
     <svg
       viewBox={`0 0 ${SVG_W} ${SVG_H}`}
       className="w-full max-w-xl"
-      aria-label="Entity–relationship diagram for the tasks table"
       role="img"
+      aria-labelledby="er-title er-desc"
     >
+      <title id="er-title">
+        Entity–relationship diagram for the tasks table
+      </title>
+      <desc id="er-desc">
+        A single &quot;tasks&quot; table with columns: id (primary key), title,
+        description, completed, date_completed (nullable), parent_id (foreign
+        key, nullable, self-referential), and deleted_at (nullable). The
+        parent_id column references id with a 0..1 to 0..* relationship,
+        representing subtasks.
+      </desc>
       {/* Entity box */}
       <rect
         x={BOX_X}
@@ -203,11 +213,53 @@ function ERDiagram() {
 
       {/* Legend */}
       <g transform={`translate(${BOX_X}, ${BOX_Y + BOX_H + 10})`}>
-        <rect x="0" y="0" width="16" height="12" rx="1" fill="#fef3c7" stroke="#d97706" strokeWidth="0.75"/>
-        <text x="20" y="10" fontSize="10" fontFamily="sans-serif" fill="#6b7280">Primary key</text>
-        <rect x="90" y="0" width="16" height="12" rx="1" fill="#dbeafe" stroke="#3b82f6" strokeWidth="0.75"/>
-        <text x="110" y="10" fontSize="10" fontFamily="sans-serif" fill="#6b7280">Foreign key</text>
-        <text x="200" y="10" fontSize="10" fontFamily="monospace" fill="#9ca3af">NN = NOT NULL</text>
+        <rect
+          x="0"
+          y="0"
+          width="16"
+          height="12"
+          rx="1"
+          fill="#fef3c7"
+          stroke="#d97706"
+          strokeWidth="0.75"
+        />
+        <text
+          x="20"
+          y="10"
+          fontSize="10"
+          fontFamily="sans-serif"
+          fill="#6b7280"
+        >
+          Primary key
+        </text>
+        <rect
+          x="90"
+          y="0"
+          width="16"
+          height="12"
+          rx="1"
+          fill="#dbeafe"
+          stroke="#3b82f6"
+          strokeWidth="0.75"
+        />
+        <text
+          x="110"
+          y="10"
+          fontSize="10"
+          fontFamily="sans-serif"
+          fill="#6b7280"
+        >
+          Foreign key
+        </text>
+        <text
+          x="200"
+          y="10"
+          fontSize="10"
+          fontFamily="monospace"
+          fill="#9ca3af"
+        >
+          NN = NOT NULL
+        </text>
       </g>
     </svg>
   );
@@ -306,9 +358,12 @@ const AboutPage = () => {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-blue-600 hover:underline"
+                className="font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
               >
                 {name}
+                <span aria-hidden="true" className="text-xs">
+                  ↗
+                </span>
                 <span className="sr-only"> (opens in new tab)</span>
               </a>
               <p className="text-sm text-gray-600 mt-0.5">{description}</p>

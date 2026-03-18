@@ -350,6 +350,30 @@ it("restoring a subtask whose parent is also in trash restores the parent", asyn
   expect(screen.getByText("Child Task")).toBeInTheDocument();
 });
 
+it("a deleted subtask nested inside its parent has a blue left border accent", async () => {
+  setupMocks([parentTask, childTask]);
+  renderWithQuery(<App />);
+
+  await screen.findByText("Child Task");
+
+  const parentLi = screen.getByText("Parent Task").closest("li")!;
+  fireEvent.click(
+    within(parentLi).getAllByRole("button", { name: /delete/i })[0],
+  );
+  await waitFor(() =>
+    expect(screen.queryByText("Parent Task")).not.toBeInTheDocument(),
+  );
+
+  await goToTrash();
+  await screen.findByText("Child Task");
+
+  const childContentDiv = screen
+    .getByText("Child Task")
+    .closest("li")!
+    .querySelector(":scope > div")!;
+  expect(childContentDiv.className).toContain("border-l-blue-400");
+});
+
 it("shows empty state when trash is empty", async () => {
   setupMocks([task1]);
   renderWithQuery(<App />);

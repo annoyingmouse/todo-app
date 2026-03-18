@@ -4,7 +4,8 @@ export default function FilterBar() {
   const setFilter = useFilterStore((state) => state.setFilter);
   const options = ["all", "active", "completed"] as const;
   return (
-    <div className="flex gap-2 h-full">
+    <fieldset className="flex gap-2 h-full border-0 p-0 m-0">
+      <legend className="sr-only">Filter tasks by status</legend>
       {options.map((option) => (
         <button
           key={option}
@@ -17,6 +18,6 @@ export default function FilterBar() {
           {option.charAt(0).toUpperCase() + option.slice(1)}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }

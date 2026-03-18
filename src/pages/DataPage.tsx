@@ -93,7 +93,14 @@ const DataPage = () => {
           Replace the entire database with tasks from a JSON export file. This
           cannot be undone.
         </p>
+        <label
+          htmlFor="import-file"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Select JSON export file
+        </label>
         <input
+          id="import-file"
           ref={fileInputRef}
           type="file"
           accept=".json,application/json"
@@ -101,7 +108,9 @@ const DataPage = () => {
           className="block mb-3"
         />
         {importError && (
-          <p className="text-sm text-red-600 mb-3">{importError}</p>
+          <p role="alert" className="text-sm text-red-600 mb-3">
+            {importError}
+          </p>
         )}
         {pendingTasks && (
           <div className="border border-yellow-400 bg-yellow-50 rounded p-3">

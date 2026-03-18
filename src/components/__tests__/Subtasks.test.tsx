@@ -64,6 +64,7 @@ function setupTasks(initial: MockTask[]) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.setItem("dev-notice-acknowledged", "true");
 });
 
 it("shows an inline subtask form when the + button is clicked", async () => {
@@ -147,16 +148,14 @@ it("subtask does not appear as a root-level task", async () => {
 
   await screen.findByText("Parent Task");
 
-  // Subtask is present in the page (rendered nested inside parent TaskItem)
-  expect(screen.getByText("Subtask")).toBeInTheDocument();
-
   // Only the parent appears as a direct child of the root task list
   const rootListItems = screen
     .getByRole("main")
     .querySelectorAll("ul.space-y-2 > li");
   expect(rootListItems).toHaveLength(1);
-  expect(rootListItems[0]).toHaveTextContent("Parent Task");
-  expect(rootListItems[0]).not.toHaveTextContent("Subtask");
+
+  // The subtask is nested inside the parent card, not a separate root item
+  expect(screen.getByText("Subtask")).toBeInTheDocument();
 });
 
 it("parent task displays completion derived from its subtask", async () => {
@@ -165,9 +164,10 @@ it("parent task displays completion derived from its subtask", async () => {
 
   await screen.findByText("Parent Task");
 
-  // Parent should show 60% (derived from the subtask), not 0%
+  // The parent's own content div (direct child of the li) shows 60%
   const parentLi = screen.getByText("Parent Task").closest("li")!;
-  expect(within(parentLi).getByText("60%")).toBeInTheDocument();
+  const parentContentDiv = parentLi.querySelector(":scope > div")!;
+  expect(within(parentContentDiv).getByText("60%")).toBeInTheDocument();
 });
 
 it("parent task has no slider when it has subtasks", async () => {
@@ -176,8 +176,12 @@ it("parent task has no slider when it has subtasks", async () => {
 
   await screen.findByText("Parent Task");
 
-  const parentLi = screen.getByText("Parent Task").closest("li")!;
-  expect(within(parentLi).queryByRole("slider")).toBeNull();
+  // Use the aria-label to target only the parent's slider, not the child's
+  expect(
+    screen.queryByRole("slider", {
+      name: /completion percentage for parent task/i,
+    }),
+  ).toBeNull();
 });
 
 it("collapse button hides subtasks and expand button shows them again", async () => {
@@ -205,6 +209,29 @@ it("collapse button hides subtasks and expand button shows them again", async ()
     within(parentLi).getByRole("button", { name: /expand subtasks/i }),
   );
   expect(await screen.findByText("Subtask")).toBeInTheDocument();
+});
+
+it("subtask card is nested inside the parent card", async () => {
+  setupTasks([parent, subtask]);
+  renderWithQuery(<App />);
+
+  await screen.findByText("Subtask");
+
+  const parentLi = screen.getByText("Parent Task").closest("li")!;
+  expect(within(parentLi).getByText("Subtask")).toBeInTheDocument();
+});
+
+it("subtask card has a blue left border accent", async () => {
+  setupTasks([parent, subtask]);
+  renderWithQuery(<App />);
+
+  await screen.findByText("Subtask");
+
+  const subtaskContentDiv = screen
+    .getByText("Subtask")
+    .closest("li")!
+    .querySelector(":scope > div")!;
+  expect(subtaskContentDiv.className).toContain("border-l-blue-400");
 });
 
 it("collapse button is not shown for tasks without subtasks", async () => {

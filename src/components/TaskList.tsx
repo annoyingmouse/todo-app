@@ -35,8 +35,13 @@ export default function TaskList() {
   return (
     <div className="space-y-4">
       <SearchBox />
-      <FilterBar />
-      <SortDropdown />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="sm:order-last"><FilterBar /></div>
+        <div className="sm:order-first"><SortDropdown /></div>
+      </div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {filteredTasks.length} task{filteredTasks.length !== 1 ? "s" : ""} shown
+      </div>
       {!filteredTasks || filteredTasks.length === 0 ? (
         <EmptyState message="No tasks found matching that search term or filter." />
       ) : (
