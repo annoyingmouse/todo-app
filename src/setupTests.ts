@@ -1,5 +1,10 @@
 import "@testing-library/jest-dom";
+import { configure } from "@testing-library/react";
 import { vi } from "vitest";
+
+// Lazy-loaded routes take longer to resolve in test environments.
+// 3s gives enough headroom without slowing down negative assertions.
+configure({ asyncUtilTimeout: 3000 });
 
 class MockWorker {
   postMessage = vi.fn();

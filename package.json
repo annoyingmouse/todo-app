@@ -10,8 +10,7 @@
     "preview": "vite preview",
     "biome": "npx @biomejs/biome format --write",
     "serve": "npx json-server --watch db.json --port 3001",
-    "test": "npx vitest run",
-    "claude": "claude --resume 65eeef07-9a73-43ce-a846-6d510df50bce"
+    "test": "npx vitest run"
   },
   "dependencies": {
     "@npiesco/absurder-sql": "^0.1.25",

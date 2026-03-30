@@ -1,5 +1,6 @@
 import init, { Database } from "@npiesco/absurder-sql";
 import { Task } from "../types/Task";
+import type { KanbanStatus } from "../types/Task";
 
 type ColumnValue =
   | { type: "Null" }
@@ -28,6 +29,12 @@ function toParam(val: unknown): ColumnValue {
   return { type: "Text", value: String(val) };
 }
 
+function derivedStatus(completed: number): KanbanStatus {
+  if (completed === 100) return "done";
+  if (completed === 0) return "backlog";
+  return "in-progress";
+}
+
 function rowsToTasks(result: QueryResult): Task[] {
   return result.rows.map((row) => {
     const obj: Record<string, unknown> = {};
@@ -38,12 +45,14 @@ function rowsToTasks(result: QueryResult): Task[] {
           ? null
           : (val as { type: string; value: unknown }).value;
     });
+    const completed = (obj.completed as number) ?? 0;
     return {
       ...obj,
-      completed: (obj.completed as number) ?? 0,
+      completed,
       dateCompleted: (obj.date_completed as string | null) ?? null,
       parentId: (obj.parent_id as number | null) ?? null,
       deletedAt: (obj.deleted_at as string | null) ?? null,
+      status: ((obj.status as string) ?? derivedStatus(completed)) as KanbanStatus,
     } as unknown as Task;
   });
 }
@@ -89,6 +98,20 @@ async function initDb(): Promise<Database> {
   } catch {
     // column already exists — safe to ignore
   }
+  try {
+    await database.execute(
+      "ALTER TABLE tasks ADD COLUMN status TEXT NOT NULL DEFAULT 'backlog'",
+    );
+    // Migrate existing tasks based on their completion percentage
+    await database.execute(
+      "UPDATE tasks SET status = 'done' WHERE completed = 100 AND status = 'backlog'",
+    );
+    await database.execute(
+      "UPDATE tasks SET status = 'in-progress' WHERE completed > 0 AND completed < 100 AND status = 'backlog'",
+    );
+  } catch {
+    // column already exists — safe to ignore
+  }
   return database;
 }
 
@@ -118,13 +141,14 @@ export const taskApi = {
     const dateCompleted =
       task.completed === 100 ? new Date().toISOString() : null;
     const result = (await database.executeWithParams(
-      "INSERT INTO tasks (title, description, completed, date_completed, parent_id) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO tasks (title, description, completed, date_completed, parent_id, status) VALUES (?, ?, ?, ?, ?, ?)",
       [
         toParam(task.title),
         toParam(task.description),
         toParam(task.completed),
         toParam(dateCompleted),
         toParam(task.parentId ?? null),
+        toParam(task.status ?? "backlog"),
       ],
     )) as QueryResult;
     await closeDb();
@@ -138,12 +162,13 @@ export const taskApi = {
         ? (task.dateCompleted ?? new Date().toISOString())
         : null;
     await database.executeWithParams(
-      "UPDATE tasks SET title=?, description=?, completed=?, date_completed=? WHERE id=?",
+      "UPDATE tasks SET title=?, description=?, completed=?, date_completed=?, status=? WHERE id=?",
       [
         toParam(task.title),
         toParam(task.description),
         toParam(task.completed),
         toParam(dateCompleted),
+        toParam(task.status ?? "backlog"),
         toParam(task.id),
       ],
     );
@@ -224,8 +249,15 @@ export const taskApi = {
     const database = await getDb();
     await database.execute("DELETE FROM tasks");
     for (const task of tasks) {
+      const status =
+        task.status ??
+        (task.completed === 100
+          ? "done"
+          : task.completed > 0
+            ? "in-progress"
+            : "backlog");
       await database.executeWithParams(
-        "INSERT INTO tasks (id, title, description, completed, date_completed, parent_id, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO tasks (id, title, description, completed, date_completed, parent_id, deleted_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
           toParam(task.id),
           toParam(task.title),
@@ -234,6 +266,7 @@ export const taskApi = {
           toParam(task.dateCompleted),
           toParam(task.parentId),
           toParam(task.deletedAt),
+          toParam(status),
         ],
       );
     }

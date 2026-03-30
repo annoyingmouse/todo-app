@@ -107,6 +107,6 @@ it("renders the Home page when the Home link is clicked", async () => {
   fireEvent.click(screen.getByRole("link", { name: /home/i }));
 
   expect(
-    await screen.findByRole("heading", { name: /home/i }),
+    await screen.findByRole("heading", { name: /board/i }),
   ).toBeInTheDocument();
 });

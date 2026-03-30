@@ -1,12 +1,13 @@
-import { Suspense, useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import DevNoticeModal from "./components/DevNoticeModal";
-import HomePage from "./pages/HomePage";
-import AboutPage from "./pages/AboutPage";
-import TrashPage from "./pages/TrashPage";
-import DataPage from "./pages/DataPage";
-import NotFound from "./pages/NotFound";
+
+const HomePage = lazy(() => import("./pages/HomePage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const TrashPage = lazy(() => import("./pages/TrashPage"));
+const DataPage = lazy(() => import("./pages/DataPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
   const [acknowledged, setAcknowledged] = useState(

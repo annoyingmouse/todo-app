@@ -1,3 +1,5 @@
+export type KanbanStatus = "backlog" | "in-progress" | "done";
+
 export type Task = {
   id: number;
   title: string;
@@ -6,4 +8,5 @@ export type Task = {
   dateCompleted: string | null;
   parentId: number | null;
   deletedAt: string | null;
+  status: KanbanStatus;
 };

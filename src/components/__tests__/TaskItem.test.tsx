@@ -27,6 +27,7 @@ const initialTasks = [
     dateCompleted: null,
     parentId: null,
     deletedAt: null,
+    status: "backlog" as const,
   },
   {
     id: 2,
@@ -36,6 +37,7 @@ const initialTasks = [
     dateCompleted: "2025-01-15T12:00:00.000Z",
     parentId: null,
     deletedAt: null,
+    status: "done" as const,
   },
 ];
 

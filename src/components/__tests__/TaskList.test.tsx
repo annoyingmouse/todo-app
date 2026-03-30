@@ -19,7 +19,9 @@ import App from "../../App";
 import { screen, fireEvent, within } from "@testing-library/react";
 import { useFilterStore } from "../../store/FilterStore";
 
-const initialTasks = [
+// Banana + Avocado in backlog (two tasks for sort testing within a column)
+// Cherry in in-progress, Apple + Grape in done (two tasks for date sort testing)
+const initialTasks: Task[] = [
   {
     id: 1,
     title: "Banana",
@@ -28,6 +30,7 @@ const initialTasks = [
     dateCompleted: null,
     parentId: null,
     deletedAt: null,
+    status: "backlog",
   },
   {
     id: 2,
@@ -37,6 +40,7 @@ const initialTasks = [
     dateCompleted: "2025-06-01T10:00:00.000Z",
     parentId: null,
     deletedAt: null,
+    status: "done",
   },
   {
     id: 3,
@@ -46,6 +50,27 @@ const initialTasks = [
     dateCompleted: null,
     parentId: null,
     deletedAt: null,
+    status: "in-progress",
+  },
+  {
+    id: 4,
+    title: "Avocado",
+    description: "",
+    completed: 0,
+    dateCompleted: null,
+    parentId: null,
+    deletedAt: null,
+    status: "backlog",
+  },
+  {
+    id: 5,
+    title: "Grape",
+    description: "",
+    completed: 100,
+    dateCompleted: "2025-01-01T10:00:00.000Z",
+    parentId: null,
+    deletedAt: null,
+    status: "done",
   },
 ];
 
@@ -65,7 +90,7 @@ beforeEach(() => {
     tasks = tasks.filter((t) => t.id !== id);
   });
 
-  useFilterStore.setState({ searchQuery: "", filter: "all", sortOrder: "asc" });
+  useFilterStore.setState({ searchQuery: "", sortOrder: "asc" });
 });
 
 it("shows all tasks by default", async () => {
@@ -90,38 +115,23 @@ it("shows error state when fetch fails", async () => {
   expect(await screen.findByText(/failed to fetch tasks/i)).toBeInTheDocument();
 });
 
-it("filters to show only active tasks", async () => {
+it("shows tasks in their correct Kanban columns", async () => {
   renderWithQuery(<App />);
   await screen.findByText("Banana");
 
-  fireEvent.click(screen.getByRole("button", { name: /^active$/i }));
+  const backlog = screen.getByTestId("kanban-column-backlog");
+  const inProgress = screen.getByTestId("kanban-column-in-progress");
+  const done = screen.getByTestId("kanban-column-done");
 
-  expect(screen.getByText("Banana")).toBeInTheDocument();
-  expect(screen.getByText("Cherry")).toBeInTheDocument();
-  expect(screen.queryByText("Apple")).not.toBeInTheDocument();
-});
+  expect(within(backlog).getByText("Banana")).toBeInTheDocument();
+  expect(within(backlog).getByText("Avocado")).toBeInTheDocument();
+  expect(within(inProgress).getByText("Cherry")).toBeInTheDocument();
+  expect(within(done).getByText("Apple")).toBeInTheDocument();
+  expect(within(done).getByText("Grape")).toBeInTheDocument();
 
-it("filters to show only completed tasks", async () => {
-  renderWithQuery(<App />);
-  await screen.findByText("Banana");
-
-  fireEvent.click(screen.getByRole("button", { name: /^completed$/i }));
-
-  expect(screen.getByText("Apple")).toBeInTheDocument();
-  expect(screen.queryByText("Banana")).not.toBeInTheDocument();
-  expect(screen.queryByText("Cherry")).not.toBeInTheDocument();
-});
-
-it("shows all tasks when All filter is selected", async () => {
-  renderWithQuery(<App />);
-  await screen.findByText("Banana");
-
-  fireEvent.click(screen.getByRole("button", { name: /^completed$/i }));
-  fireEvent.click(screen.getByRole("button", { name: /^all$/i }));
-
-  expect(screen.getByText("Banana")).toBeInTheDocument();
-  expect(screen.getByText("Apple")).toBeInTheDocument();
-  expect(screen.getByText("Cherry")).toBeInTheDocument();
+  // Tasks should not appear in wrong columns
+  expect(within(backlog).queryByText("Apple")).not.toBeInTheDocument();
+  expect(within(done).queryByText("Banana")).not.toBeInTheDocument();
 });
 
 it("narrows results when searching", async () => {
@@ -137,7 +147,7 @@ it("narrows results when searching", async () => {
   expect(screen.queryByText("Cherry")).not.toBeInTheDocument();
 });
 
-it("shows empty state when no tasks match search", async () => {
+it("shows empty column state when no tasks match search", async () => {
   renderWithQuery(<App />);
   await screen.findByText("Banana");
 
@@ -145,51 +155,20 @@ it("shows empty state when no tasks match search", async () => {
     target: { value: "zzz" },
   });
 
-  expect(await screen.findByText(/no tasks found/i)).toBeInTheDocument();
+  expect(await screen.findAllByText(/no tasks/i)).toHaveLength(3);
 });
 
-it("sorts tasks A to Z by default", async () => {
+it("sorts tasks A to Z within a column", async () => {
   renderWithQuery(<App />);
   await screen.findByText("Banana");
 
-  const main = screen.getByRole("main");
-  const items = within(main).getAllByRole("listitem");
-  expect(items[0]).toHaveTextContent("Apple");
+  const backlog = screen.getByTestId("kanban-column-backlog");
+  const items = within(backlog).getAllByRole("listitem");
+  expect(items[0]).toHaveTextContent("Avocado");
   expect(items[1]).toHaveTextContent("Banana");
-  expect(items[2]).toHaveTextContent("Cherry");
 });
 
-it("sorts tasks with a dateCompleted before those without when sorting by date ascending", async () => {
-  renderWithQuery(<App />);
-  await screen.findByText("Banana");
-
-  fireEvent.change(screen.getByRole("combobox"), {
-    target: { value: "dateAsc" },
-  });
-
-  const main = screen.getByRole("main");
-  const items = within(main).getAllByRole("listitem");
-  expect(items[0]).toHaveTextContent("Apple");
-  expect(items[1]).toHaveTextContent("Banana");
-  expect(items[2]).toHaveTextContent("Cherry");
-});
-
-it("sorts tasks with a dateCompleted before those without when sorting by date descending", async () => {
-  renderWithQuery(<App />);
-  await screen.findByText("Banana");
-
-  fireEvent.change(screen.getByRole("combobox"), {
-    target: { value: "dateDesc" },
-  });
-
-  const main = screen.getByRole("main");
-  const items = within(main).getAllByRole("listitem");
-  expect(items[0]).toHaveTextContent("Apple");
-  expect(items[1]).toHaveTextContent("Banana");
-  expect(items[2]).toHaveTextContent("Cherry");
-});
-
-it("sorts tasks Z to A when sort order is changed", async () => {
+it("sorts tasks Z to A within a column when sort order is changed", async () => {
   renderWithQuery(<App />);
   await screen.findByText("Banana");
 
@@ -197,9 +176,38 @@ it("sorts tasks Z to A when sort order is changed", async () => {
     target: { value: "desc" },
   });
 
-  const main = screen.getByRole("main");
-  const items = within(main).getAllByRole("listitem");
-  expect(items[0]).toHaveTextContent("Cherry");
-  expect(items[1]).toHaveTextContent("Banana");
-  expect(items[2]).toHaveTextContent("Apple");
+  const backlog = screen.getByTestId("kanban-column-backlog");
+  const items = within(backlog).getAllByRole("listitem");
+  expect(items[0]).toHaveTextContent("Banana");
+  expect(items[1]).toHaveTextContent("Avocado");
+});
+
+it("sorts tasks with an earlier dateCompleted first when sorting by date ascending", async () => {
+  renderWithQuery(<App />);
+  await screen.findByText("Apple");
+
+  fireEvent.change(screen.getByRole("combobox"), {
+    target: { value: "dateAsc" },
+  });
+
+  const done = screen.getByTestId("kanban-column-done");
+  const items = within(done).getAllByRole("listitem");
+  // Grape: 2025-01-01 (earlier), Apple: 2025-06-01 (later)
+  expect(items[0]).toHaveTextContent("Grape");
+  expect(items[1]).toHaveTextContent("Apple");
+});
+
+it("sorts tasks with a later dateCompleted first when sorting by date descending", async () => {
+  renderWithQuery(<App />);
+  await screen.findByText("Apple");
+
+  fireEvent.change(screen.getByRole("combobox"), {
+    target: { value: "dateDesc" },
+  });
+
+  const done = screen.getByTestId("kanban-column-done");
+  const items = within(done).getAllByRole("listitem");
+  // Apple: 2025-06-01 (later), Grape: 2025-01-01 (earlier)
+  expect(items[0]).toHaveTextContent("Apple");
+  expect(items[1]).toHaveTextContent("Grape");
 });

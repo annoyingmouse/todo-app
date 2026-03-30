@@ -25,6 +25,7 @@ type MockTask = {
   dateCompleted: string | null;
   parentId: number | null;
   deletedAt: string | null;
+  status: "backlog" | "in-progress" | "done";
 };
 
 const parent: MockTask = {
@@ -35,6 +36,7 @@ const parent: MockTask = {
   dateCompleted: null,
   parentId: null,
   deletedAt: null,
+  status: "backlog",
 };
 const subtask: MockTask = {
   id: 2,
@@ -44,6 +46,7 @@ const subtask: MockTask = {
   dateCompleted: null,
   parentId: 1,
   deletedAt: null,
+  status: "in-progress",
 };
 
 function setupTasks(initial: MockTask[]) {

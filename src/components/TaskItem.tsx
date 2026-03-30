@@ -7,6 +7,7 @@ import { useFilterStore } from "../store/FilterStore";
 import EditTaskModal from "./EditTaskModal";
 import type { Task } from "../types/Task";
 import { sortTasks } from "../utils/sortTasks";
+import { statusFromPct } from "../utils/kanbanUtils";
 
 const DEPTH_ACCENT = [
   "",
@@ -39,14 +40,18 @@ const TaskItem: React.FC<TaskProps> = ({ task, depth = 0 }) => {
 
   useEffect(() => {
     if (derivedPct !== null && derivedPct !== task.completed) {
-      updateTask({ ...task, completed: derivedPct });
+      const newStatus = statusFromPct(derivedPct);
+      updateTask({ ...task, completed: derivedPct, status: newStatus });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [derivedPct]);
 
   const handleSliderCommit = () => {
     if (pct !== task.completed) {
-      updateTask({ ...task, completed: pct });
+      const newStatus = statusFromPct(pct);
+      const dateCompleted =
+        pct === 100 ? (task.dateCompleted ?? new Date().toISOString()) : null;
+      updateTask({ ...task, completed: pct, status: newStatus, dateCompleted });
     }
   };
 
@@ -66,6 +71,7 @@ const TaskItem: React.FC<TaskProps> = ({ task, depth = 0 }) => {
       dateCompleted: null,
       parentId: task.id,
       deletedAt: null,
+      status: "backlog",
     });
     setChildTitle("");
     setAddingChild(false);

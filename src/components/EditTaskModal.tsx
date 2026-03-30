@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Task } from "../types/Task";
+import type { KanbanStatus } from "../types/Task";
 import Button from "./Button";
+import { statusFromPct, pctFromStatus } from "../utils/kanbanUtils";
 
 type Props = {
   task: Task;
@@ -8,10 +10,23 @@ type Props = {
   onClose: () => void;
 };
 
+const STATUS_LABELS: Record<KanbanStatus, string> = {
+  backlog: "Backlog",
+  "in-progress": "In Progress",
+  done: "Done",
+};
+
+const STATUS_STYLES: Record<KanbanStatus, string> = {
+  backlog: "bg-gray-200 text-gray-700 border-gray-400",
+  "in-progress": "bg-blue-200 text-blue-700 border-blue-400",
+  done: "bg-green-200 text-green-700 border-green-400",
+};
+
 const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
   const [completed, setCompleted] = useState(task.completed);
+  const [status, setStatus] = useState<KanbanStatus>(task.status);
   const [dateCompleted, setDateCompleted] = useState(
     task.dateCompleted ? task.dateCompleted.slice(0, 10) : "",
   );
@@ -22,6 +37,27 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
     dialogRef.current?.showModal();
     inputRef.current?.focus();
   }, []);
+
+  const handleSliderChange = (val: number) => {
+    setCompleted(val);
+    setStatus(statusFromPct(val));
+    if (val === 100 && !dateCompleted) {
+      setDateCompleted(new Date().toISOString().slice(0, 10));
+    } else if (val < 100) {
+      setDateCompleted("");
+    }
+  };
+
+  const handleStatusChange = (newStatus: KanbanStatus) => {
+    setStatus(newStatus);
+    const newPct = pctFromStatus(newStatus, completed);
+    setCompleted(newPct);
+    if (newStatus === "done" && !dateCompleted) {
+      setDateCompleted(new Date().toISOString().slice(0, 10));
+    } else if (newStatus !== "done") {
+      setDateCompleted("");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +72,7 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
       description,
       completed,
       dateCompleted: fullDate,
+      status,
     });
   };
 
@@ -78,6 +115,26 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
           placeholder="Description (optional)"
           rows={3}
         />
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Status</p>
+          <div className="flex gap-2">
+            {(["backlog", "in-progress", "done"] as KanbanStatus[]).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => handleStatusChange(s)}
+                className={`flex-1 text-sm py-1 rounded border-2 font-medium transition-all ${
+                  status === s
+                    ? STATUS_STYLES[s]
+                    : "bg-gray-50 text-gray-400 border-transparent"
+                }`}
+                aria-pressed={status === s}
+              >
+                {STATUS_LABELS[s]}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <label
             htmlFor="edit-task-pct"
@@ -92,15 +149,7 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
             max={100}
             step={1}
             value={completed}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              setCompleted(val);
-              if (val === 100 && !dateCompleted) {
-                setDateCompleted(new Date().toISOString().slice(0, 10));
-              } else if (val < 100) {
-                setDateCompleted("");
-              }
-            }}
+            onChange={(e) => handleSliderChange(Number(e.target.value))}
             className="flex-1"
           />
         </div>

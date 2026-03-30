@@ -25,6 +25,7 @@ type MockTask = {
   dateCompleted: string | null;
   parentId: number | null;
   deletedAt: string | null;
+  status: "backlog" | "in-progress" | "done";
 };
 
 const task1: MockTask = {
@@ -35,6 +36,7 @@ const task1: MockTask = {
   dateCompleted: null,
   parentId: null,
   deletedAt: null,
+  status: "backlog",
 };
 const parentTask: MockTask = {
   id: 2,
@@ -44,6 +46,7 @@ const parentTask: MockTask = {
   dateCompleted: null,
   parentId: null,
   deletedAt: null,
+  status: "backlog",
 };
 const childTask: MockTask = {
   id: 3,
@@ -53,6 +56,7 @@ const childTask: MockTask = {
   dateCompleted: null,
   parentId: 2,
   deletedAt: null,
+  status: "backlog",
 };
 
 function setupMocks(initial: MockTask[]) {
@@ -121,7 +125,7 @@ async function goToTrash() {
 
 async function goToHome() {
   fireEvent.click(screen.getByRole("link", { name: /home/i }));
-  await screen.findByRole("heading", { name: /home/i });
+  await screen.findByRole("heading", { name: /board/i });
 }
 
 beforeEach(() => {

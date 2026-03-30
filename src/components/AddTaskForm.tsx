@@ -15,6 +15,7 @@ const AddTaskForm = () => {
       dateCompleted: null,
       parentId: null,
       deletedAt: null,
+      status: "backlog",
     });
     setTitle("");
   };
