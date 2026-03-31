@@ -7,7 +7,7 @@ import { useFilterStore } from "../store/FilterStore";
 import EditTaskModal from "./EditTaskModal";
 import type { Task } from "../types/Task";
 import { sortTasks } from "../utils/sortTasks";
-import { statusFromPct } from "../utils/kanbanUtils";
+import { statusFromSlider } from "../utils/kanbanUtils";
 
 const DEPTH_ACCENT = [
   "",
@@ -40,7 +40,7 @@ const TaskItem: React.FC<TaskProps> = ({ task, depth = 0 }) => {
 
   useEffect(() => {
     if (derivedPct !== null && derivedPct !== task.completed) {
-      const newStatus = statusFromPct(derivedPct);
+      const newStatus = statusFromSlider(derivedPct, task.status);
       updateTask({ ...task, completed: derivedPct, status: newStatus });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -48,7 +48,7 @@ const TaskItem: React.FC<TaskProps> = ({ task, depth = 0 }) => {
 
   const handleSliderCommit = () => {
     if (pct !== task.completed) {
-      const newStatus = statusFromPct(pct);
+      const newStatus = statusFromSlider(pct, task.status);
       const dateCompleted =
         pct === 100 ? (task.dateCompleted ?? new Date().toISOString()) : null;
       updateTask({ ...task, completed: pct, status: newStatus, dateCompleted });

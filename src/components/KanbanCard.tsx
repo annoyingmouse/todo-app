@@ -8,7 +8,7 @@ import { useFilterStore } from "../store/FilterStore";
 import EditTaskModal from "./EditTaskModal";
 import TaskItem from "./TaskItem";
 import { sortTasks } from "../utils/sortTasks";
-import { statusFromPct, pctFromStatus } from "../utils/kanbanUtils";
+import { statusFromSlider, pctFromStatus } from "../utils/kanbanUtils";
 
 const STATUS_LABELS: Record<KanbanStatus, string> = {
   backlog: "Backlog",
@@ -53,7 +53,7 @@ const KanbanCard: React.FC<Props> = ({ task, draggingId, onDragStart }) => {
 
   useEffect(() => {
     if (derivedPct !== null && derivedPct !== task.completed) {
-      const newStatus = statusFromPct(derivedPct);
+      const newStatus = statusFromSlider(derivedPct, task.status);
       updateTask({ ...task, completed: derivedPct, status: newStatus });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,7 +61,7 @@ const KanbanCard: React.FC<Props> = ({ task, draggingId, onDragStart }) => {
 
   const handleSliderCommit = () => {
     if (pct !== task.completed) {
-      const newStatus = statusFromPct(pct);
+      const newStatus = statusFromSlider(pct, task.status);
       const dateCompleted =
         pct === 100 ? (task.dateCompleted ?? new Date().toISOString()) : null;
       updateTask({ ...task, completed: pct, status: newStatus, dateCompleted });

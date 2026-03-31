@@ -12,7 +12,9 @@
       "Bash(npx vitest:*)",
       "WebFetch(domain:docs.github.com)",
       "Bash(npm run:*)",
-      "Bash(grep -r import.*from.*@ C:/Users/annoy/WebstormProjects/todo-app/src)"
+      "Bash(grep -r import.*from.*@ C:/Users/annoy/WebstormProjects/todo-app/src)",
+      "WebSearch",
+      "Bash(npm ls:*)"
     ]
   }
 }

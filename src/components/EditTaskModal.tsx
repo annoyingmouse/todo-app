@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Task } from "../types/Task";
 import type { KanbanStatus } from "../types/Task";
 import Button from "./Button";
-import { statusFromPct, pctFromStatus } from "../utils/kanbanUtils";
+import { statusFromSlider, pctFromStatus } from "../utils/kanbanUtils";
 
 type Props = {
   task: Task;
@@ -40,7 +40,7 @@ const EditTaskModal: React.FC<Props> = ({ task, onSave, onClose }) => {
 
   const handleSliderChange = (val: number) => {
     setCompleted(val);
-    setStatus(statusFromPct(val));
+    setStatus(statusFromSlider(val, status));
     if (val === 100 && !dateCompleted) {
       setDateCompleted(new Date().toISOString().slice(0, 10));
     } else if (val < 100) {
