@@ -12,6 +12,7 @@ vi.mock("../../sql/db-client", () => {
       parentId: null,
       deletedAt: null,
       status: "backlog",
+      collapsed: false,
     },
     {
       id: 2,
@@ -22,6 +23,7 @@ vi.mock("../../sql/db-client", () => {
       parentId: null,
       deletedAt: null,
       status: "backlog",
+      collapsed: false,
     },
   ];
 

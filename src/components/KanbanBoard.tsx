@@ -22,7 +22,9 @@ export default function KanbanBoard() {
   const [dragOverStatus, setDragOverStatus] = useState<KanbanStatus | null>(
     null,
   );
-  const [hideDone, setHideDone] = useState(false);
+  const [hideDone, setHideDone] = useState(
+    () => localStorage.getItem("kanban-hide-done") === "true",
+  );
 
   const rootTasks = (tasks ?? []).filter((t: Task) => t.parentId === null);
   const searchedTasks = rootTasks.filter((t: Task) =>
@@ -74,7 +76,12 @@ export default function KanbanBoard() {
         <div className="flex items-stretch gap-2 shrink-0">
           <SortDropdown />
           <button
-            onClick={() => setHideDone((h) => !h)}
+            onClick={() =>
+              setHideDone((h) => {
+                localStorage.setItem("kanban-hide-done", String(!h));
+                return !h;
+              })
+            }
             className={`text-sm px-3 rounded border transition-colors ${
               hideDone
                 ? "bg-gray-800 text-white border-gray-800"

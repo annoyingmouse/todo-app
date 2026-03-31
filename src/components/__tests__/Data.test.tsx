@@ -30,6 +30,7 @@ const SAMPLE_TASKS: Task[] = [
     parentId: null,
     deletedAt: null,
     status: "backlog",
+    collapsed: false,
   },
   {
     id: 2,
@@ -40,6 +41,7 @@ const SAMPLE_TASKS: Task[] = [
     parentId: null,
     deletedAt: null,
     status: "backlog",
+    collapsed: false,
   },
 ];
 

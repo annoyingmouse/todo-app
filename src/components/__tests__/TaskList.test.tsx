@@ -31,6 +31,7 @@ const initialTasks: Task[] = [
     parentId: null,
     deletedAt: null,
     status: "backlog",
+    collapsed: false,
   },
   {
     id: 2,
@@ -41,6 +42,7 @@ const initialTasks: Task[] = [
     parentId: null,
     deletedAt: null,
     status: "done",
+    collapsed: false,
   },
   {
     id: 3,
@@ -51,6 +53,7 @@ const initialTasks: Task[] = [
     parentId: null,
     deletedAt: null,
     status: "in-progress",
+    collapsed: false,
   },
   {
     id: 4,
@@ -61,6 +64,7 @@ const initialTasks: Task[] = [
     parentId: null,
     deletedAt: null,
     status: "backlog",
+    collapsed: false,
   },
   {
     id: 5,
@@ -71,6 +75,7 @@ const initialTasks: Task[] = [
     parentId: null,
     deletedAt: null,
     status: "done",
+    collapsed: false,
   },
 ];
 

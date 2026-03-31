@@ -28,6 +28,7 @@ const initialTasks = [
     parentId: null,
     deletedAt: null,
     status: "backlog" as const,
+    collapsed: false,
   },
   {
     id: 2,
@@ -38,6 +39,7 @@ const initialTasks = [
     parentId: null,
     deletedAt: null,
     status: "done" as const,
+    collapsed: false,
   },
 ];
 

@@ -26,6 +26,7 @@ type MockTask = {
   parentId: number | null;
   deletedAt: string | null;
   status: "backlog" | "in-progress" | "done";
+  collapsed: boolean;
 };
 
 const task1: MockTask = {
@@ -37,6 +38,7 @@ const task1: MockTask = {
   parentId: null,
   deletedAt: null,
   status: "backlog",
+  collapsed: false,
 };
 const parentTask: MockTask = {
   id: 2,
@@ -47,6 +49,7 @@ const parentTask: MockTask = {
   parentId: null,
   deletedAt: null,
   status: "backlog",
+  collapsed: false,
 };
 const childTask: MockTask = {
   id: 3,
@@ -57,6 +60,7 @@ const childTask: MockTask = {
   parentId: 2,
   deletedAt: null,
   status: "backlog",
+  collapsed: false,
 };
 
 function setupMocks(initial: MockTask[]) {

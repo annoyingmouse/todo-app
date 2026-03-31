@@ -53,6 +53,7 @@ function rowsToTasks(result: QueryResult): Task[] {
       parentId: (obj.parent_id as number | null) ?? null,
       deletedAt: (obj.deleted_at as string | null) ?? null,
       status: ((obj.status as string) ?? derivedStatus(completed)) as KanbanStatus,
+      collapsed: Boolean((obj.collapsed as number) ?? 0),
     } as unknown as Task;
   });
 }
@@ -112,6 +113,13 @@ async function initDb(): Promise<Database> {
   } catch {
     // column already exists — safe to ignore
   }
+  try {
+    await database.execute(
+      "ALTER TABLE tasks ADD COLUMN collapsed INTEGER NOT NULL DEFAULT 0",
+    );
+  } catch {
+    // column already exists — safe to ignore
+  }
   return database;
 }
 
@@ -141,7 +149,7 @@ export const taskApi = {
     const dateCompleted =
       task.completed === 100 ? new Date().toISOString() : null;
     const result = (await database.executeWithParams(
-      "INSERT INTO tasks (title, description, completed, date_completed, parent_id, status) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO tasks (title, description, completed, date_completed, parent_id, status, collapsed) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         toParam(task.title),
         toParam(task.description),
@@ -149,6 +157,7 @@ export const taskApi = {
         toParam(dateCompleted),
         toParam(task.parentId ?? null),
         toParam(task.status ?? "backlog"),
+        toParam(task.collapsed ? 1 : 0),
       ],
     )) as QueryResult;
     await closeDb();
@@ -162,13 +171,14 @@ export const taskApi = {
         ? (task.dateCompleted ?? new Date().toISOString())
         : null;
     await database.executeWithParams(
-      "UPDATE tasks SET title=?, description=?, completed=?, date_completed=?, status=? WHERE id=?",
+      "UPDATE tasks SET title=?, description=?, completed=?, date_completed=?, status=?, collapsed=? WHERE id=?",
       [
         toParam(task.title),
         toParam(task.description),
         toParam(task.completed),
         toParam(dateCompleted),
         toParam(task.status ?? "backlog"),
+        toParam(task.collapsed ? 1 : 0),
         toParam(task.id),
       ],
     );
@@ -257,7 +267,7 @@ export const taskApi = {
             ? "in-progress"
             : "backlog");
       await database.executeWithParams(
-        "INSERT INTO tasks (id, title, description, completed, date_completed, parent_id, deleted_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO tasks (id, title, description, completed, date_completed, parent_id, deleted_at, status, collapsed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
           toParam(task.id),
           toParam(task.title),
@@ -267,6 +277,7 @@ export const taskApi = {
           toParam(task.parentId),
           toParam(task.deletedAt),
           toParam(status),
+          toParam(task.collapsed ? 1 : 0),
         ],
       );
     }

@@ -40,7 +40,6 @@ const KanbanCard: React.FC<Props> = ({ task, draggingId, onDragStart }) => {
   const [pct, setPct] = useState(task.completed);
   const [addingChild, setAddingChild] = useState(false);
   const [childTitle, setChildTitle] = useState("");
-  const [collapsed, setCollapsed] = useState(false);
 
   const derivedPct =
     children.length > 0
@@ -95,6 +94,7 @@ const KanbanCard: React.FC<Props> = ({ task, draggingId, onDragStart }) => {
       parentId: task.id,
       deletedAt: null,
       status: "backlog",
+      collapsed: false,
     });
     setChildTitle("");
     setAddingChild(false);
@@ -121,10 +121,10 @@ const KanbanCard: React.FC<Props> = ({ task, draggingId, onDragStart }) => {
             </span>
             {children.length > 0 && (
               <button
-                onClick={() => setCollapsed((c) => !c)}
-                className={`text-xs w-5 text-gray-500 shrink-0 font-mono mt-0.5 transition-transform duration-300 ${collapsed ? "" : "rotate-90"}`}
-                aria-label={collapsed ? "Expand subtasks" : "Collapse subtasks"}
-                aria-expanded={!collapsed}
+                onClick={() => updateTask({ ...task, collapsed: !task.collapsed })}
+                className={`text-xs w-5 text-gray-500 shrink-0 font-mono mt-0.5 transition-transform duration-300 ${task.collapsed ? "" : "rotate-90"}`}
+                aria-label={task.collapsed ? "Expand subtasks" : "Collapse subtasks"}
+                aria-expanded={!task.collapsed}
                 aria-controls={`subtasks-${task.id}`}
               >
                 ▶
@@ -263,7 +263,7 @@ const KanbanCard: React.FC<Props> = ({ task, draggingId, onDragStart }) => {
         )}
 
         {/* Subtasks */}
-        {children.length > 0 && !collapsed && (
+        {children.length > 0 && !task.collapsed && (
           <ul
             id={`subtasks-${task.id}`}
             className="border-t divide-y bg-gray-50"

@@ -9,4 +9,5 @@ export type Task = {
   parentId: number | null;
   deletedAt: string | null;
   status: KanbanStatus;
+  collapsed: boolean;
 };
